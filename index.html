@@ -1,0 +1,744 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>雷雕刻字小工具｜Laser Tools</title>
+
+<style>
+*{
+    box-sizing:border-box;
+    margin:0;
+    padding:0;
+}
+
+:root{
+    --red:#d9363e;
+    --red-dark:#b9252d;
+    --text:#222;
+    --sub:#777;
+    --bg:#f5f5f5;
+    --card:#fff;
+    --line:#e8e8e8;
+}
+
+body{
+    font-family:
+        -apple-system,
+        BlinkMacSystemFont,
+        "Noto Sans TC",
+        "Microsoft JhengHei",
+        sans-serif;
+
+    background:var(--bg);
+    color:var(--text);
+}
+
+
+/* =========================
+   Header
+========================= */
+
+.header{
+    height:72px;
+
+    background:#fff;
+    border-bottom:1px solid var(--line);
+
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+
+    padding:0 5%;
+}
+
+.logo{
+    font-size:20px;
+    font-weight:800;
+    letter-spacing:1px;
+}
+
+.logo span{
+    color:var(--red);
+}
+
+.header-right{
+    color:#888;
+    font-size:13px;
+}
+
+
+/* =========================
+   Hero
+========================= */
+
+.hero{
+    max-width:1200px;
+    margin:auto;
+
+    padding:65px 30px 45px;
+}
+
+.hero-label{
+    color:var(--red);
+
+    font-size:13px;
+    font-weight:700;
+
+    letter-spacing:2px;
+
+    margin-bottom:14px;
+}
+
+.hero h1{
+    font-size:42px;
+    line-height:1.2;
+
+    margin-bottom:16px;
+
+    letter-spacing:-1px;
+}
+
+.hero p{
+    color:var(--sub);
+
+    line-height:1.8;
+    font-size:15px;
+}
+
+
+/* =========================
+   Container
+========================= */
+
+.container{
+    max-width:1200px;
+    margin:auto;
+
+    padding:
+        0 30px
+        80px;
+}
+
+
+/* =========================
+   Section Title
+========================= */
+
+.section-title{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+
+    margin-bottom:20px;
+}
+
+.section-title h2{
+    font-size:20px;
+}
+
+.section-title span{
+    font-size:13px;
+    color:#999;
+}
+
+
+/* =========================
+   Tools
+========================= */
+
+.tools{
+    display:grid;
+
+    grid-template-columns:
+        repeat(3,1fr);
+
+    gap:18px;
+}
+
+
+/* =========================
+   Tool Link
+========================= */
+
+/*
+    使用 <a> 取代原本的 onclick。
+    之後只要修改 href 即可。
+*/
+
+.tool-card{
+    position:relative;
+
+    display:block;
+
+    text-decoration:none;
+    color:var(--text);
+
+    background:var(--card);
+
+    border:1px solid var(--line);
+    border-radius:16px;
+
+    padding:28px;
+
+    min-height:190px;
+
+    cursor:pointer;
+
+    transition:
+        transform .2s ease,
+        box-shadow .2s ease,
+        border-color .2s ease;
+
+    overflow:hidden;
+}
+
+.tool-card:hover{
+    transform:translateY(-4px);
+
+    border-color:#ddd;
+
+    box-shadow:
+        0 12px 30px rgba(0,0,0,.08);
+}
+
+
+/* =========================
+   Tool Icon
+========================= */
+
+.tool-icon{
+    width:48px;
+    height:48px;
+
+    border-radius:12px;
+
+    background:#f7e6e7;
+    color:var(--red);
+
+    display:flex;
+    align-items:center;
+    justify-content:center;
+
+    font-size:23px;
+
+    margin-bottom:22px;
+}
+
+.tool-card h3{
+    font-size:18px;
+
+    margin-bottom:9px;
+}
+
+.tool-card p{
+    color:#888;
+
+    font-size:13px;
+    line-height:1.7;
+}
+
+.tool-arrow{
+    position:absolute;
+
+    right:24px;
+    bottom:22px;
+
+    color:#bbb;
+
+    font-size:20px;
+
+    transition:.2s;
+}
+
+.tool-card:hover .tool-arrow{
+    color:var(--red);
+
+    transform:
+        translateX(4px);
+}
+
+
+/* =========================
+   Featured
+========================= */
+
+.featured{
+    grid-column:span 2;
+
+    background:
+        linear-gradient(
+            135deg,
+            #fff,
+            #fafafa
+        );
+}
+
+.featured::after{
+    content:"";
+
+    position:absolute;
+
+    width:180px;
+    height:180px;
+
+    right:-60px;
+    top:-60px;
+
+    border-radius:50%;
+
+    background:#f8e1e3;
+
+    z-index:0;
+}
+
+.featured > *{
+    position:relative;
+
+    z-index:1;
+}
+
+
+/* =========================
+   Calculator
+========================= */
+
+.calculator{
+    margin-top:45px;
+
+    background:#fff;
+
+    border:1px solid var(--line);
+
+    border-radius:18px;
+
+    padding:30px;
+}
+
+.calculator h2{
+    font-size:20px;
+
+    margin-bottom:8px;
+}
+
+.calculator-desc{
+    font-size:13px;
+
+    color:#888;
+
+    margin-bottom:25px;
+}
+
+.calc-grid{
+    display:grid;
+
+    grid-template-columns:
+        repeat(3,1fr);
+
+    gap:15px;
+}
+
+.field{
+    display:flex;
+
+    flex-direction:column;
+
+    gap:7px;
+}
+
+.field label{
+    font-size:13px;
+
+    color:#555;
+}
+
+.field input{
+    width:100%;
+
+    border:1px solid #ddd;
+
+    border-radius:9px;
+
+    padding:12px;
+
+    font-size:15px;
+
+    outline:none;
+
+    background:#fff;
+}
+
+.field input:focus{
+    border-color:var(--red);
+}
+
+.calc-button{
+    margin-top:20px;
+
+    width:100%;
+
+    padding:13px;
+
+    border:0;
+
+    border-radius:9px;
+
+    background:var(--red);
+
+    color:#fff;
+
+    font-size:15px;
+    font-weight:700;
+
+    cursor:pointer;
+
+    transition:.2s;
+}
+
+.calc-button:hover{
+    background:var(--red-dark);
+}
+
+.result{
+    margin-top:20px;
+
+    background:#f7f7f7;
+
+    border-radius:10px;
+
+    padding:20px;
+
+    display:grid;
+
+    grid-template-columns:
+        repeat(3,1fr);
+
+    gap:15px;
+}
+
+.result-item{
+    text-align:center;
+}
+
+.result-item small{
+    display:block;
+
+    color:#999;
+
+    font-size:12px;
+
+    margin-bottom:5px;
+}
+
+.result-item strong{
+    font-size:22px;
+}
+
+
+/* =========================
+   Footer
+========================= */
+
+.footer{
+    text-align:center;
+
+    padding:30px;
+
+    color:#aaa;
+
+    font-size:12px;
+}
+
+
+/* =========================
+   Responsive
+========================= */
+
+@media(max-width:850px){
+
+    .hero{
+        padding-top:45px;
+    }
+
+    .hero h1{
+        font-size:34px;
+    }
+
+    .tools{
+        grid-template-columns:
+            repeat(2,1fr);
+    }
+
+    .featured{
+        grid-column:span 2;
+    }
+
+    .calc-grid{
+        grid-template-columns:
+            repeat(2,1fr);
+    }
+
+    .result{
+        grid-template-columns:
+            repeat(3,1fr);
+    }
+}
+
+
+@media(max-width:600px){
+
+    .header{
+        height:62px;
+
+        padding:0 20px;
+    }
+
+    .header-right{
+        display:none;
+    }
+
+    .hero{
+        padding:
+            40px 20px
+            30px;
+    }
+
+    .hero h1{
+        font-size:30px;
+    }
+
+    .container{
+        padding:
+            0 20px
+            60px;
+    }
+
+    .tools{
+        grid-template-columns:1fr;
+    }
+
+    .featured{
+        grid-column:span 1;
+    }
+
+    .tool-card{
+        min-height:170px;
+    }
+
+    .calc-grid{
+        grid-template-columns:1fr;
+    }
+
+    .calculator{
+        padding:22px;
+    }
+
+    .result{
+        grid-template-columns:1fr;
+    }
+}
+</style>
+</head>
+
+
+<body>
+
+
+<!-- =========================
+     Header
+========================= -->
+
+<header class="header">
+    <div class="logo">
+        LASER<span>TOOLS</span>
+    </div>
+
+    <div class="header-right">
+        Graphic Designer Utility
+    </div>
+
+</header>
+
+
+
+<!-- =========================
+     Hero
+========================= -->
+
+<section class="hero">
+
+    <div class="hero-label">
+        LASER TOOLBOX
+    </div>
+
+    <h1>
+        雷雕刻字小工具
+    </h1>
+
+    <p>
+        SVG 文字、尺寸換算與比例計算。
+    </p>
+
+</section>
+
+
+
+<!-- =========================
+     Tools
+========================= -->
+
+<main class="container">
+
+    <div class="section-title">
+
+        <h2>
+            工具列表
+        </h2>
+
+        <span>
+            TOOLS
+        </span>
+
+    </div>
+
+
+    <div class="tools">
+
+
+        <!-- =====================
+            合併圖片
+        ====================== -->
+
+        <a
+            href="./Laser-Note/index.html"
+            class="tool-card featured"
+        >
+
+            <div class="tool-icon">
+                ⚡
+            </div>
+
+            <h3>
+                刻字筆記
+            </h3>
+
+            <p>
+                紀錄雷雕數值及注意事項等。
+            </p>
+
+            <div class="tool-arrow">
+                →
+            </div>
+
+        </a>
+
+
+
+        <!-- =====================
+            毫米比例計算器
+        ====================== -->
+
+        <a
+            href="./Laser-Size-Calculator.html"
+            class="tool-card"
+        >
+
+            <div class="tool-icon">
+                📏
+            </div>
+
+            <h3>
+                毫米比例計算器
+            </h3>
+
+            <p>
+                輸入原始尺寸與比例，
+                快速計算實際毫米尺寸。
+            </p>
+
+            <div class="tool-arrow">
+                →
+            </div>
+
+        </a>
+
+
+        <!-- =====================
+            SVG 向量文字
+        ====================== -->
+
+        <a
+            href="./Laser-Font-SVG.html"
+            class="tool-card"
+        >
+
+            <div class="tool-icon">
+                T
+            </div>
+
+            <h3>
+                SVG 向量文字
+            </h3>
+
+            <p>
+                輸入文字後即時預覽 SVG，
+                適合雷雕、切割與印刷設計。
+            </p>
+
+            <div class="tool-arrow">
+                →
+            </div>
+
+        </a>
+
+
+        <!-- =====================
+            更多工具
+        ====================== -->
+
+        <a
+            href=""
+            class="tool-card"
+        >
+
+            <div class="tool-icon">
+                +
+            </div>
+
+            <h3>
+                更多工具
+            </h3>
+
+            <p>
+                預留更多設計工作常用工具，
+                未來可以持續加入。
+            </p>
+
+            <div class="tool-arrow">
+                →
+            </div>
+
+        </a>
+
+
+    </div>
+
+</main>
+
+
+
+<!-- =========================
+     Footer
+========================= -->
+
+<footer class="footer">
+
+    DESIGN TOOLS · Personal Designer Toolbox
+
+</footer>
+
+
+
+</body>
+</html>
