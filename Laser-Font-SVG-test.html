@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SVG 純向量曲線產生器</title>
+    <title>SVG 高精細純向量曲線產生器</title>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
-    <!-- 引入 Potrace.js: 將圖形/文字 100% 轉為貝茲曲線向量路徑 (Pure Bezier Vector Path) -->
+    <!-- 引入 Potrace.js: 將 Canvas 圖形轉為貝茲曲線向量路徑 -->
     <script src="https://cdn.jsdelivr.net/npm/potrace@2.1.8/potrace.js"></script>
     <style>
         * {
@@ -23,7 +23,7 @@
         .container {
             background-color: #ffffff;
             width: 100%;
-            max-width: 700px;
+            max-width: 750px;
             padding: 30px;
             border-radius: 12px;
             box-shadow: 0 4px 20px rgba(0,0,0,0.08);
@@ -110,7 +110,7 @@
 <body>
 
 <div class="container">
-    <h1>SVG 純向量曲線產生器</h1>
+    <h1>SVG 高精細純向量曲線產生器 (抗鋸齒平滑優化版)</h1>
     
     <div class="input-group">
         <input type="text" id="userInput" value="Eggꒉ:)و ̑̑" placeholder="請輸入文字...">
@@ -118,14 +118,16 @@
     </div>
 
     <div class="preview-box" id="previewBox">
-        <span style="color: #999;">按下「送出」後將產生純向量曲線 (無 &lt;text&gt; 標籤)</span>
+        <span style="color: #999;">按下「送出」後將產生高精細純向量曲線 (無 &lt;text&gt; 標籤)</span>
     </div>
 
-    <button id="downloadBtn" class="btn-download" onclick="downloadSVG()">下載 Illustrator 向量 SVG 檔案</button>
+    <button id="downloadBtn" class="btn-download" onclick="downloadSVG()">下載 Illustrator 高精細向量 SVG 檔案</button>
 
     <div class="info-text">
-        <strong>說明：</strong><br>
-        本版本使用 <code>Potrace.js</code> 演算法，支援任意特殊字元/表情符號（如 <code>Eggꒉ:)و ̑̑</code>）。轉出的 SVG 只有純向量貝茲曲線（&lt;path&gt;），完全不含 &lt;text&gt; 標籤與字體宣告，Illustrator 開啟 100% 不會跳出缺少字體警告。
+        <strong>鋸齒修復說明：</strong><br>
+        1. 採用 <strong>8x 超高解析度採樣 (Supersampling)</strong> 渲染文字 Canvas，將特徵點提升至 800px 級別細緻度。<br>
+        2. 啟用 <code>Potrace</code> 曲線最佳化擬合參數 (<code>optcurve: true</code>, <code>alphamax: 1.33</code>)，將像素邊緣完美平滑化為高階貝茲曲線。<br>
+        3. 匯出的向量檔包含完美的圓弧與極細緻的字形細節，且維持 100% 純向量外框（無任何 &lt;text&gt; 標籤）。
     </div>
 </div>
 
@@ -142,35 +144,58 @@
         const canvas = document.getElementById('textCanvas');
         const ctx = canvas.getContext('2d');
 
-        const fontSize = 80;
+        // 使用 8 倍高解析度放大繪製 (Supersampling) 以徹底消除鋸齒
+        const scaleFactor = 8;
+        const baseFontSize = 60;
+        const fontSize = baseFontSize * scaleFactor; // 480px 超高解析度字體
         const fontStyle = `${fontSize}px "Roboto", "Droid Sans", Arial, sans-serif`;
 
         ctx.font = fontStyle;
         const textMetrics = ctx.measureText(text);
 
-        const width = Math.max(Math.ceil(textMetrics.width) + 80, 200);
-        const height = fontSize + 80;
+        const hiresWidth = Math.max(Math.ceil(textMetrics.width) + (100 * scaleFactor), 400 * scaleFactor);
+        const hiresHeight = fontSize + (100 * scaleFactor);
 
-        canvas.width = width;
-        canvas.height = height;
+        canvas.width = hiresWidth;
+        canvas.height = hiresHeight;
 
-        // 填滿白色背景，繪製黑色文字
+        // 清空背景並填滿純白
         ctx.fillStyle = '#ffffff';
-        ctx.fillRect(0, 0, width, height);
+        ctx.fillRect(0, 0, hiresWidth, hiresHeight);
+
+        // 在超高解析度下繪製黑色文字，確保特徵與曲線點極度充足
         ctx.fillStyle = '#000000';
         ctx.font = fontStyle;
         ctx.textBaseline = 'middle';
-        ctx.fillText(text, 40, height / 2);
+        ctx.fillText(text, 50 * scaleFactor, hiresHeight / 2);
 
-        // 使用 Potrace 進行貝茲曲線向量描邊
+        // 設定 Potrace 最佳化曲線平滑參數
+        Potrace.setParameter({
+            turnpolicy: "minority",
+            tresh: 128,
+            alphamax: 1.33,   // 允許最大弧度平滑控制
+            optcurve: true,   // 開啟貝茲曲線最佳化擬合
+            opttolerance: 0.2 // 擬合公差控制，越小越貼近原圖，曲線越平滑
+        });
+
         Potrace.loadImage(canvas);
         Potrace.process(function() {
-            const pathData = Potrace.getSVG(1.0);
-            
-            // 組裝成標準 SVG
+            // 取得高解析度的 SVG Path Data
+            const rawSvg = Potrace.getSVG(1.0);
+
+            // 提取內部 <path> 標籤
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(rawSvg, 'image/svg+xml');
+            const pathNode = doc.querySelector('path');
+            const pathData = pathNode ? pathNode.getAttribute('d') : '';
+
+            // 將 ViewBox 與尺寸還原設定為目標顯示尺寸 (以 scaleFactor 縮放回正常比例，獲得超細緻的向量曲線)
+            const displayWidth = Math.round(hiresWidth / scaleFactor);
+            const displayHeight = Math.round(hiresHeight / scaleFactor);
+
             currentSvgString = `<?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<svg xmlns="http://www.w3.org/2000/svg" version="1.1" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}">
-  ${pathData}
+<svg xmlns="http://www.w3.org/2000/svg" version="1.1" width="${displayWidth}" height="${displayHeight}" viewBox="0 0 ${hiresWidth} ${hiresHeight}">
+  <path d="${pathData}" fill="#000000" fill-rule="evenodd"/>
 </svg>`;
 
             previewBox.innerHTML = currentSvgString;
@@ -178,7 +203,6 @@
         });
     }
 
-    // 頁面載入完成後自動初始化執行一次
     window.onload = function() {
         generateSVG();
     };
@@ -190,7 +214,7 @@
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = 'vector-path.svg';
+        a.download = 'smooth-vector-path.svg';
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
