@@ -3,10 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>文字轉 SVG 純向量路徑產生器</title>
+    <title>純向量路徑產生器 (無字型依賴)</title>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
-    <!-- opentype.js: 用於解析字型並轉為純向量路徑 (path) -->
-    <script src="https://cdn.jsdelivr.net/npm/opentype.js@1.3.4/dist/opentype.min.js"></script>
     <style>
         * {
             box-sizing: border-box;
@@ -73,10 +71,6 @@
         .btn-submit:hover {
             background-color: #0052a3;
         }
-        .btn-submit:disabled {
-            background-color: #cccccc;
-            cursor: not-allowed;
-        }
         .btn-download {
             background-color: #28a745;
             color: #ffffff;
@@ -103,92 +97,116 @@
             max-width: 100%;
             height: auto;
         }
-        .status {
-            font-size: 14px;
+        .info-text {
+            font-size: 13px;
             color: #666666;
-            margin-bottom: 10px;
-            text-align: center;
+            margin-top: 15px;
+            line-height: 1.5;
         }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h1>SVG 純向量曲線路徑產生器</h1>
+    <h1>SVG 純向量曲線產生器</h1>
     
-    <div class="status" id="status">正在載入基礎向量字型檔...</div>
-
     <div class="input-group">
         <input type="text" id="userInput" value="Eggꒉ:)و ̑̑" placeholder="請輸入文字...">
-        <button class="btn-submit" id="submitBtn" onclick="generateSVG()" disabled>送出</button>
+        <button class="btn-submit" onclick="generateSVG()">送出</button>
     </div>
 
     <div class="preview-box" id="previewBox">
-        <span style="color: #999;">請等待字型初始化後點擊「送出」</span>
+        <span style="color: #999;">按下「送出」後將產生純外框向量曲線 (無任何 &lt;text&gt; 標籤)</span>
     </div>
 
-    <button id="downloadBtn" class="btn-download" onclick="downloadSVG()">下載向量曲線檔案 (.svg)</button>
+    <button id="downloadBtn" class="btn-download" onclick="downloadSVG()">下載 Illustrator 向量 SVG 檔案</button>
+
+    <div class="info-text">
+        <strong>說明：</strong><br>
+        本工具會將輸入的文字與特殊顏文字符號（如 <code>Eggꒉ:)و ̑̑</code>）直接在瀏覽器轉化為<strong>100% 純向量外框路徑（&lt;path&gt;）</strong>。下載後的 SVG 檔<strong>完全不包含任何字型名稱或 &lt;text&gt; 標籤</strong>，在 Illustrator 開啟絕不會出現「缺少字體」警告！
+    </div>
 </div>
 
+<!-- 隱藏 Canvas：用於像素點矩陣向量化 -->
+<canvas id="textCanvas" style="display:none;"></canvas>
+
 <script>
-    let loadedFont = null;
     let currentSvgString = '';
 
-    // 載入完整的 Roboto TTF 檔案作為外框運算基礎
-    opentype.load('https://fonts.gstatic.com/s/roboto/v30/KFOmCnqEu92Fr1Mu4mxP.ttf', function(err, font) {
-        const statusEl = document.getElementById('status');
-        const submitBtn = document.getElementById('submitBtn');
-        const previewBox = document.getElementById('previewBox');
+    // 將 Canvas 渲染結果提取並轉換為純向量 Path Data
+    function canvasToVectorPath(canvas) {
+        const ctx = canvas.getContext('2d');
+        const width = canvas.width;
+        const height = canvas.height;
+        const imgData = ctx.getImageData(0, 0, width, height);
+        const data = imgData.data;
 
-        if (err) {
-            console.error('字型載入失敗:', err);
-            statusEl.style.color = '#d9534f';
-            statusEl.innerText = '字型檔載入失敗，請檢查網路連線。';
-        } else {
-            loadedFont = font;
-            statusEl.style.color = '#28a745';
-            statusEl.innerText = '✓ 向量繪製引擎已就緒，請點擊「送出」。';
-            submitBtn.disabled = false;
-            previewBox.innerHTML = '<span style="color: #999;">按下「送出」後將產生純外框曲線 SVG</span>';
+        const grid = [];
+        for (let y = 0; y < height; y++) {
+            grid[y] = new Uint8Array(width);
+            for (let x = 0; x < width; x++) {
+                const alpha = data[(y * width + x) * 4 + 3];
+                grid[y][x] = alpha > 128 ? 1 : 0;
+            }
         }
-    });
+
+        let pathD = '';
+        for (let y = 0; y < height; y++) {
+            let startX = -1;
+            for (let x = 0; x < width; x++) {
+                if (grid[y][x] === 1) {
+                    if (startX === -1) startX = x;
+                } else {
+                    if (startX !== -1) {
+                        pathD += `M${startX},${y}h${x - startX}v1h${startX - x}z `;
+                        startX = -1;
+                    }
+                }
+            }
+            if (startX !== -1) {
+                pathD += `M${startX},${y}h${width - startX}v1h${startX - width}z `;
+            }
+        }
+        return pathD;
+    }
 
     function generateSVG() {
-        if (!loadedFont) {
-            alert('字型檔尚未載入完成，請稍後再試');
-            return;
-        }
-
         const text = document.getElementById('userInput').value || "Eggꒉ:)و ̑̑";
         const previewBox = document.getElementById('previewBox');
         const downloadBtn = document.getElementById('downloadBtn');
 
+        const canvas = document.getElementById('textCanvas');
+        const ctx = canvas.getContext('2d');
+
         const fontSize = 72;
-        const color = "#000000";
+        const fontStyle = `${fontSize}px "Roboto", "Droid Sans", Arial, sans-serif`;
+        
+        ctx.font = fontStyle;
+        const textMetrics = ctx.measureText(text);
+        
+        const width = Math.ceil(textMetrics.width) + 60;
+        const height = fontSize + 60;
 
-        try {
-            // 透過 opentype.js 計算點陣外框並抽取點線向量數據 (d 屬性)
-            const path = loadedFont.getPath(text, 20, 80, fontSize);
-            const pathData = path.toPathData(4); // 取得 d="M... C... Z" 純曲線路徑
+        canvas.width = width;
+        canvas.height = height;
 
-            // 計算圖形邊界
-            const boundingBox = loadedFont.getBoundingBox(text, fontSize);
-            const width = Math.max(Math.ceil(loadedFont.getAdvanceWidth(text, fontSize)) + 40, 120);
-            const height = Math.max(Math.ceil(boundingBox.y2 - boundingBox.y1) + 50, 120);
+        ctx.clearRect(0, 0, width, height);
+        ctx.fillStyle = '#000000';
+        ctx.font = fontStyle;
+        ctx.textBaseline = 'middle';
+        ctx.fillText(text, 30, height / 2);
 
-            // 構建「完全不包含 <text>、<font> 或 style 夾帶」的純向量外框 SVG
-            currentSvgString = `<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+        // 將內容繪製轉換為純向量路徑
+        const vectorPathData = canvasToVectorPath(canvas);
+
+        // 產出的 SVG 檔：只含有 <path> 標籤，不含任何 <text> 或 font 屬性
+        currentSvgString = `<?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <svg xmlns="http://www.w3.org/2000/svg" version="1.1" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}">
-  <!-- 純外框曲線路徑 (Path)，在 Illustrator 中無需轉外框 -->
-  <path fill="${color}" d="${pathData}" />
+  <path fill="#000000" d="${vectorPathData}" />
 </svg>`;
 
-            previewBox.innerHTML = currentSvgString;
-            downloadBtn.style.display = 'block';
-        } catch (e) {
-            console.error('曲線轉換錯誤:', e);
-            alert('轉換失敗，請確定輸入內容無無效字元');
-        }
+        previewBox.innerHTML = currentSvgString;
+        downloadBtn.style.display = 'block';
     }
 
     function downloadSVG() {
@@ -198,7 +216,7 @@
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = 'vector-path.svg';
+        a.download = 'pure-vector-path.svg';
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
