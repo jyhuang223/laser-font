@@ -13,11 +13,18 @@
 <title>文字 → SVG 向量路徑</title>
 
 
-<!-- OpenType.js -->
+<!-- =====================================================
+     OpenType.js
+===================================================== -->
+
 <script src="https://cdn.jsdelivr.net/npm/opentype.js@1.3.4/dist/opentype.min.js"></script>
 
 
 <style>
+
+/* =====================================================
+   基本
+===================================================== */
 
 * {
     box-sizing: border-box;
@@ -47,10 +54,14 @@ body {
 
     width: min(100%, 1000px);
 
-    margin: auto;
+    margin: 0 auto;
 
 }
 
+
+/* =====================================================
+   Header
+===================================================== */
 
 .header {
 
@@ -65,6 +76,8 @@ body {
 
     font-size: 28px;
 
+    font-weight: 700;
+
 }
 
 
@@ -78,6 +91,10 @@ body {
 
 }
 
+
+/* =====================================================
+   Card
+===================================================== */
 
 .card {
 
@@ -95,6 +112,10 @@ body {
 }
 
 
+/* =====================================================
+   Label
+===================================================== */
+
 label {
 
     display: block;
@@ -107,6 +128,10 @@ label {
 
 }
 
+
+/* =====================================================
+   Textarea
+===================================================== */
 
 textarea {
 
@@ -149,6 +174,10 @@ textarea:focus {
 }
 
 
+/* =====================================================
+   Settings
+===================================================== */
+
 .settings {
 
     display: grid;
@@ -186,8 +215,21 @@ input[type="number"] {
 
     font-size: 15px;
 
+    outline: none;
+
 }
 
+
+input[type="number"]:focus {
+
+    border-color: #888;
+
+}
+
+
+/* =====================================================
+   Buttons
+===================================================== */
 
 .buttons {
 
@@ -202,7 +244,8 @@ input[type="number"] {
 }
 
 
-button {
+button,
+.upload-button {
 
     border: 0;
 
@@ -215,6 +258,8 @@ button {
     font-weight: 600;
 
     cursor: pointer;
+
+    transition: .2s;
 
 }
 
@@ -232,6 +277,8 @@ button {
 
     background: #333;
 
+    transform: translateY(-1px);
+
 }
 
 
@@ -244,9 +291,31 @@ button {
 }
 
 
-.btn-upload {
+.btn-download:hover {
+
+    background: #dfe3e6;
+
+}
+
+
+.upload-button {
+
+    display: inline-flex;
+
+    align-items: center;
+
+    justify-content: center;
 
     background: #f1f1f1;
+
+    color: #222;
+
+}
+
+
+.upload-button:hover {
+
+    background: #e5e5e5;
 
 }
 
@@ -257,8 +326,21 @@ button:disabled {
 
     cursor: not-allowed;
 
+    transform: none;
+
 }
 
+
+.file-upload {
+
+    display: none;
+
+}
+
+
+/* =====================================================
+   Preview Header
+===================================================== */
 
 .preview-title {
 
@@ -291,6 +373,10 @@ button:disabled {
 }
 
 
+/* =====================================================
+   Preview
+===================================================== */
+
 .preview {
 
     width: 100%;
@@ -305,31 +391,32 @@ button:disabled {
 
         linear-gradient(
             45deg,
-            #eee 25%,
+            #eeeeee 25%,
             transparent 25%
         ),
 
         linear-gradient(
             -45deg,
-            #eee 25%,
+            #eeeeee 25%,
             transparent 25%
         ),
 
         linear-gradient(
             45deg,
             transparent 75%,
-            #eee 75%
+            #eeeeee 75%
         ),
 
         linear-gradient(
             -45deg,
             transparent 75%,
-            #eee 75%
+            #eeeeee 75%
         );
 
     background-size: 20px 20px;
 
     background-position:
+
         0 0,
         0 10px,
         10px -10px,
@@ -356,8 +443,14 @@ button:disabled {
 
     height: auto;
 
+    overflow: visible;
+
 }
 
+
+/* =====================================================
+   Font Status
+===================================================== */
 
 .font-status {
 
@@ -390,6 +483,10 @@ button:disabled {
 }
 
 
+/* =====================================================
+   Info
+===================================================== */
+
 .info {
 
     margin-top: 16px;
@@ -416,14 +513,22 @@ button:disabled {
 }
 
 
-.file-upload {
+code {
 
-    display: none;
+    background: #eee;
+
+    padding: 2px 5px;
+
+    border-radius: 4px;
 
 }
 
 
-@media(max-width:650px) {
+/* =====================================================
+   Mobile
+===================================================== */
+
+@media (max-width: 650px) {
 
     body {
 
@@ -460,7 +565,8 @@ button:disabled {
     }
 
 
-    button {
+    button,
+    .upload-button {
 
         width: 100%;
 
@@ -479,6 +585,10 @@ button:disabled {
 <div class="container">
 
 
+    <!-- =================================================
+         Header
+    ================================================== -->
+
     <div class="header">
 
         <h1>
@@ -492,18 +602,22 @@ button:disabled {
     </div>
 
 
-    <!-- ==========================================
+
+    <!-- =================================================
          輸入區
-    =========================================== -->
+    ================================================== -->
 
     <div class="card">
+
 
         <label for="textInput">
             輸入文字
         </label>
 
 
-        <textarea id="textInput">Eggꒉ:)و ̑̑</textarea>
+        <textarea id="textInput">Eggꒉ:)و ̑̑
+ℋ𝓊𝒶𝓃𝑔</textarea>
+
 
 
         <div class="settings">
@@ -514,6 +628,7 @@ button:disabled {
                 <label for="fontSize">
                     字體大小
                 </label>
+
 
                 <input
                     id="fontSize"
@@ -526,15 +641,17 @@ button:disabled {
             </div>
 
 
+
             <div class="field">
 
                 <label>
                     主要字型
                 </label>
 
+
                 <input
                     type="text"
-                    value="Roboto / Noto Sans"
+                    value="Roboto / Noto Sans / Noto Sans Math"
                     readonly
                 >
 
@@ -542,6 +659,7 @@ button:disabled {
 
 
         </div>
+
 
 
         <div class="buttons">
@@ -567,17 +685,7 @@ button:disabled {
 
             <label
                 for="fontFile"
-                class="btn-upload"
-                style="
-                    display:inline-flex;
-                    align-items:center;
-                    justify-content:center;
-                    border-radius:9px;
-                    padding:12px 22px;
-                    font-size:15px;
-                    font-weight:600;
-                    cursor:pointer;
-                "
+                class="upload-button"
             >
                 上傳 TTF / OTF 字型
             </label>
@@ -592,6 +700,7 @@ button:disabled {
 
 
         </div>
+
 
 
         <!-- 字型狀態 -->
@@ -609,18 +718,21 @@ button:disabled {
     </div>
 
 
-    <!-- ==========================================
+
+    <!-- =================================================
          預覽
-    =========================================== -->
+    ================================================== -->
 
     <div class="card">
 
 
         <div class="preview-title">
 
+
             <h2>
                 向量預覽
             </h2>
+
 
             <span
                 id="status"
@@ -629,7 +741,9 @@ button:disabled {
                 準備中
             </span>
 
+
         </div>
+
 
 
         <div
@@ -642,25 +756,35 @@ button:disabled {
         </div>
 
 
+
         <div class="info">
+
 
             <strong>
                 Path 向量模式
             </strong>
 
+
             <br>
+
 
             SVG 不使用
-            <code>&lt;text&gt;</code>。
+            <code>&lt;text&gt;</code>
+            元素。
+
 
             <br>
+
 
             所有成功找到的字元都會轉換成真正的
             <strong>SVG Path</strong>。
 
+
             <br>
 
+
             Illustrator 開啟後可以直接編輯節點。
+
 
         </div>
 
@@ -680,19 +804,22 @@ button:disabled {
 
 
 /*
-    注意：
+    每個字型提供兩個來源：
 
-    這裡不再使用 notofonts.github.io。
+    ① GitHub Raw
+    ② Noto Fonts
 
-    改使用 GitHub Raw。
-
-    如果 GitHub Pages 的瀏覽器無法載入，
-    可以使用「上傳 TTF / OTF 字型」功能。
+    如果第一個失敗，
+    自動嘗試第二個。
 */
 
 
 const FONT_URLS = {
 
+
+    /* ---------------------------------------------
+       Roboto
+    --------------------------------------------- */
 
     roboto: [
 
@@ -703,6 +830,11 @@ const FONT_URLS = {
     ],
 
 
+
+    /* ---------------------------------------------
+       Noto Sans
+    --------------------------------------------- */
+
     noto: [
 
         "https://raw.githubusercontent.com/notofonts/noto-fonts/main/unhinted/ttf/NotoSans/NotoSans-Regular.ttf",
@@ -711,6 +843,17 @@ const FONT_URLS = {
 
     ],
 
+
+
+    /* ---------------------------------------------
+       Noto Sans Yi
+
+       例如：
+
+       ꒉ
+
+       U+A489
+    --------------------------------------------- */
 
     yi: [
 
@@ -721,6 +864,15 @@ const FONT_URLS = {
     ],
 
 
+
+    /* ---------------------------------------------
+       Noto Sans Arabic
+
+       例如：
+
+       و
+    --------------------------------------------- */
+
     arabic: [
 
         "https://raw.githubusercontent.com/notofonts/noto-fonts/main/unhinted/ttf/NotoSansArabic/NotoSansArabic-Regular.ttf",
@@ -730,11 +882,43 @@ const FONT_URLS = {
     ],
 
 
+
+    /* ---------------------------------------------
+       Noto Sans Symbols
+    --------------------------------------------- */
+
     symbols: [
 
         "https://raw.githubusercontent.com/notofonts/noto-fonts/main/unhinted/ttf/NotoSansSymbols2/NotoSansSymbols2-Regular.ttf",
 
         "https://notofonts.github.io/fonts/NotoSansSymbols2/unhinted/ttf/NotoSansSymbols2-Regular.ttf"
+
+    ],
+
+
+
+    /* ---------------------------------------------
+       ★ 新增
+
+       Noto Sans Math
+
+       專門處理：
+
+       ℋ
+       𝓊
+       𝒶
+       𝓃
+       𝑔
+
+       以及其他 Mathematical
+       Alphanumeric Symbols
+    --------------------------------------------- */
+
+    math: [
+
+        "https://raw.githubusercontent.com/notofonts/noto-fonts/main/unhinted/ttf/NotoSansMath/NotoSansMath-Regular.ttf",
+
+        "https://notofonts.github.io/fonts/NotoSansMath/unhinted/ttf/NotoSansMath-Regular.ttf"
 
     ]
 
@@ -748,6 +932,7 @@ const FONT_URLS = {
 
 const fonts = {
 
+
     roboto: null,
 
     noto: null,
@@ -758,11 +943,17 @@ const fonts = {
 
     symbols: null,
 
+    math: null,
+
     uploaded: null
 
 };
 
 
+
+/* =========================================================
+   目前 SVG
+========================================================= */
 
 let currentSVG = "";
 
@@ -773,43 +964,60 @@ let currentSVG = "";
 ========================================================= */
 
 const textInput =
-    document.getElementById("textInput");
+    document.getElementById(
+        "textInput"
+    );
 
 
 const fontSizeInput =
-    document.getElementById("fontSize");
+    document.getElementById(
+        "fontSize"
+    );
 
 
 const generateBtn =
-    document.getElementById("generateBtn");
+    document.getElementById(
+        "generateBtn"
+    );
 
 
 const downloadBtn =
-    document.getElementById("downloadBtn");
+    document.getElementById(
+        "downloadBtn"
+    );
 
 
 const preview =
-    document.getElementById("preview");
+    document.getElementById(
+        "preview"
+    );
 
 
 const status =
-    document.getElementById("status");
+    document.getElementById(
+        "status"
+    );
 
 
 const fontStatus =
-    document.getElementById("fontStatus");
+    document.getElementById(
+        "fontStatus"
+    );
 
 
 const fontFile =
-    document.getElementById("fontFile");
+    document.getElementById(
+        "fontFile"
+    );
 
 
 
 /* =========================================================
-   載入字型
+   載入單一字型
 ========================================================= */
 
 function loadFont(url) {
+
 
     return new Promise(
 
@@ -847,7 +1055,7 @@ function loadFont(url) {
 
 
 /* =========================================================
-   嘗試多個網址
+   多網址 fallback
 ========================================================= */
 
 async function loadFontWithFallback(
@@ -865,6 +1073,7 @@ async function loadFontWithFallback(
 
         try {
 
+
             console.log(
                 "嘗試載入字型：",
                 url
@@ -872,7 +1081,9 @@ async function loadFontWithFallback(
 
 
             const font =
-                await loadFont(url);
+                await loadFont(
+                    url
+                );
 
 
             console.log(
@@ -884,7 +1095,7 @@ async function loadFontWithFallback(
             return font;
 
 
-        } catch(error) {
+        } catch (error) {
 
 
             console.warn(
@@ -909,7 +1120,36 @@ async function loadFontWithFallback(
 
 
 /* =========================================================
-   更新字型狀態
+   判斷是否至少有字型
+========================================================= */
+
+function hasAnyFont() {
+
+
+    return !!(
+
+        fonts.roboto ||
+
+        fonts.noto ||
+
+        fonts.yi ||
+
+        fonts.arabic ||
+
+        fonts.symbols ||
+
+        fonts.math ||
+
+        fonts.uploaded
+
+    );
+
+}
+
+
+
+/* =========================================================
+   字型狀態
 ========================================================= */
 
 function updateFontStatus() {
@@ -918,25 +1158,33 @@ function updateFontStatus() {
     const rows = [];
 
 
-    function add(
+    function addFontStatus(
         name,
         font
     ) {
 
+
         if (font) {
 
+
             rows.push(
+
                 `<div class="font-ok">
                     ✓ ${name}：載入成功
                 </div>`
+
             );
+
 
         } else {
 
+
             rows.push(
+
                 `<div class="font-error">
                     ✕ ${name}：載入失敗
                 </div>`
+
             );
 
         }
@@ -944,42 +1192,56 @@ function updateFontStatus() {
     }
 
 
-    add(
+
+    addFontStatus(
         "Roboto",
         fonts.roboto
     );
 
 
-    add(
+    addFontStatus(
         "Noto Sans",
         fonts.noto
     );
 
 
-    add(
+    addFontStatus(
         "Noto Sans Yi（ꒉ）",
         fonts.yi
     );
 
 
-    add(
+    addFontStatus(
         "Noto Sans Arabic（و）",
         fonts.arabic
     );
 
 
-    add(
+    addFontStatus(
         "Noto Sans Symbols",
         fonts.symbols
     );
 
 
+    /*
+        ★ 新增 Math
+    */
+
+    addFontStatus(
+        "Noto Sans Math（ℋ 𝓊 𝒶 𝓃 𝑔）",
+        fonts.math
+    );
+
+
     if (fonts.uploaded) {
 
+
         rows.push(
+
             `<div class="font-ok">
                 ✓ 使用者上傳字型：載入成功
             </div>`
+
         );
 
     }
@@ -1000,20 +1262,17 @@ async function loadAllFonts() {
 
 
     status.textContent =
-        "正在載入字型…";
+        "正在載入 Unicode 字型…";
 
 
     fontStatus.textContent =
-        "正在載入字型…";
+        "正在載入 Unicode 字型…";
 
 
-    /*
-        不使用 Promise.all。
 
-        某一個字型失敗，
-        不會影響其他字型。
-    */
-
+    /* ---------------------------------------------
+       Roboto
+    --------------------------------------------- */
 
     try {
 
@@ -1022,14 +1281,20 @@ async function loadAllFonts() {
                 FONT_URLS.roboto
             );
 
-    } catch(error) {
+    } catch (error) {
 
         console.warn(
-            "Roboto 無法載入"
+            "Roboto 無法載入",
+            error
         );
 
     }
 
+
+
+    /* ---------------------------------------------
+       Noto Sans
+    --------------------------------------------- */
 
     try {
 
@@ -1038,14 +1303,20 @@ async function loadAllFonts() {
                 FONT_URLS.noto
             );
 
-    } catch(error) {
+    } catch (error) {
 
         console.warn(
-            "Noto Sans 無法載入"
+            "Noto Sans 無法載入",
+            error
         );
 
     }
 
+
+
+    /* ---------------------------------------------
+       Yi
+    --------------------------------------------- */
 
     try {
 
@@ -1054,14 +1325,20 @@ async function loadAllFonts() {
                 FONT_URLS.yi
             );
 
-    } catch(error) {
+    } catch (error) {
 
         console.warn(
-            "Noto Sans Yi 無法載入"
+            "Noto Sans Yi 無法載入",
+            error
         );
 
     }
 
+
+
+    /* ---------------------------------------------
+       Arabic
+    --------------------------------------------- */
 
     try {
 
@@ -1070,14 +1347,20 @@ async function loadAllFonts() {
                 FONT_URLS.arabic
             );
 
-    } catch(error) {
+    } catch (error) {
 
         console.warn(
-            "Noto Sans Arabic 無法載入"
+            "Noto Sans Arabic 無法載入",
+            error
         );
 
     }
 
+
+
+    /* ---------------------------------------------
+       Symbols
+    --------------------------------------------- */
 
     try {
 
@@ -1086,33 +1369,52 @@ async function loadAllFonts() {
                 FONT_URLS.symbols
             );
 
-    } catch(error) {
+    } catch (error) {
 
         console.warn(
-            "Noto Symbols 無法載入"
+            "Noto Sans Symbols 無法載入",
+            error
         );
 
     }
 
 
+
+    /* ---------------------------------------------
+       ★ Math
+    --------------------------------------------- */
+
+    try {
+
+        fonts.math =
+            await loadFontWithFallback(
+                FONT_URLS.math
+            );
+
+    } catch (error) {
+
+        console.warn(
+            "Noto Sans Math 無法載入",
+            error
+        );
+
+    }
+
+
+
+    /* ---------------------------------------------
+       更新狀態
+    --------------------------------------------- */
+
     updateFontStatus();
 
 
-    /*
-        只要至少有一個字型，
-        就允許使用。
-    */
 
-    const hasAnyFont =
+    /* ---------------------------------------------
+       啟用工具
+    --------------------------------------------- */
 
-        fonts.roboto ||
-        fonts.noto ||
-        fonts.yi ||
-        fonts.arabic ||
-        fonts.symbols;
-
-
-    if (hasAnyFont) {
+    if (hasAnyFont()) {
 
 
         generateBtn.disabled =
@@ -1137,6 +1439,14 @@ async function loadAllFonts() {
     } else {
 
 
+        generateBtn.disabled =
+            false;
+
+
+        generateBtn.textContent =
+            "送出";
+
+
         status.textContent =
             "遠端字型無法載入";
 
@@ -1149,31 +1459,19 @@ async function loadAllFonts() {
 
             </div>
 
+
             <div style="margin-top:8px;">
 
-                請點擊上方
+                請使用上方
                 「上傳 TTF / OTF 字型」
 
                 <br>
 
-                即可直接使用本機字型進行向量轉換。
+                即可使用本機字型進行向量轉換。
 
             </div>
 
         `;
-
-
-        /*
-            即使遠端全部失敗，
-            上傳字型仍然可以啟用工具。
-        */
-
-        generateBtn.disabled =
-            false;
-
-
-        generateBtn.textContent =
-            "送出";
 
     }
 
@@ -1182,7 +1480,7 @@ async function loadAllFonts() {
 
 
 /* =========================================================
-   判斷 Glyph
+   Glyph 判斷
 ========================================================= */
 
 function hasGlyph(
@@ -1207,7 +1505,7 @@ function hasGlyph(
             );
 
 
-        return (
+        return !!(
 
             glyph &&
 
@@ -1216,7 +1514,8 @@ function hasGlyph(
         );
 
 
-    } catch(error) {
+    } catch (error) {
+
 
         return false;
 
@@ -1227,12 +1526,13 @@ function hasGlyph(
 
 
 /* =========================================================
-   Unicode 分類
+   Yi
 ========================================================= */
 
 function isYi(
     character
 ) {
+
 
     const code =
         character.codePointAt(0);
@@ -1241,6 +1541,7 @@ function isYi(
     return (
 
         code >= 0xA000 &&
+
         code <= 0xA4CF
 
     );
@@ -1249,9 +1550,14 @@ function isYi(
 
 
 
+/* =========================================================
+   Arabic
+========================================================= */
+
 function isArabic(
     character
 ) {
+
 
     const code =
         character.codePointAt(0);
@@ -1284,9 +1590,104 @@ function isArabic(
 
 
 
+/* =========================================================
+   ★ Mathematical Alphanumeric Symbols
+========================================================= */
+
+function isMathCharacter(
+    character
+) {
+
+
+    const code =
+        character.codePointAt(0);
+
+
+    /*
+        Mathematical Alphanumeric Symbols
+
+        U+1D400 ~ U+1D7FF
+
+        包含：
+
+        𝐀
+        𝑨
+        𝒜
+        𝓐
+        𝔄
+        𝕬
+        𝖠
+        𝗔
+        𝘈
+        𝙰
+
+        等等。
+    */
+
+
+    if (
+
+        code >= 0x1D400 &&
+
+        code <= 0x1D7FF
+
+    ) {
+
+        return true;
+
+    }
+
+
+
+    /*
+        Letterlike Symbols
+
+        例如：
+
+        ℋ
+        ℌ
+        ℍ
+        ℎ
+        ℏ
+        ℐ
+        ℑ
+        ℒ
+        ℓ
+        ℕ
+        ℘
+        ℛ
+        ℜ
+        ℤ
+
+    */
+
+    if (
+
+        code >= 0x2100 &&
+
+        code <= 0x214F
+
+    ) {
+
+        return true;
+
+    }
+
+
+    return false;
+
+}
+
+
+
+/* =========================================================
+   Combining Mark
+========================================================= */
+
 function isCombiningMark(
     character
 ) {
+
 
     const code =
         character.codePointAt(0);
@@ -1334,7 +1735,7 @@ function isCombiningMark(
 
 
 /* =========================================================
-   找到最適合的字型
+   取得字型
 ========================================================= */
 
 function getFontForCharacter(
@@ -1343,15 +1744,20 @@ function getFontForCharacter(
 
 
     /*
-        使用者上傳字型優先
+        ==========================================
+        ① 使用者上傳字型
+        ==========================================
     */
 
     if (
+
         fonts.uploaded &&
+
         hasGlyph(
             fonts.uploaded,
             character
         )
+
     ) {
 
         return fonts.uploaded;
@@ -1361,16 +1767,55 @@ function getFontForCharacter(
 
 
     /*
-        Yi
+        ==========================================
+        ② Mathematical Characters
+        ==========================================
     */
 
-    if (isYi(character)) {
+    if (
+        isMathCharacter(
+            character
+        )
+    ) {
+
 
         if (
+
+            hasGlyph(
+                fonts.math,
+                character
+            )
+
+        ) {
+
+            return fonts.math;
+
+        }
+
+    }
+
+
+
+    /*
+        ==========================================
+        ③ Yi
+        ==========================================
+    */
+
+    if (
+        isYi(
+            character
+        )
+    ) {
+
+
+        if (
+
             hasGlyph(
                 fonts.yi,
                 character
             )
+
         ) {
 
             return fonts.yi;
@@ -1382,16 +1827,25 @@ function getFontForCharacter(
 
 
     /*
-        Arabic
+        ==========================================
+        ④ Arabic
+        ==========================================
     */
 
-    if (isArabic(character)) {
+    if (
+        isArabic(
+            character
+        )
+    ) {
+
 
         if (
+
             hasGlyph(
                 fonts.arabic,
                 character
             )
+
         ) {
 
             return fonts.arabic;
@@ -1403,7 +1857,9 @@ function getFontForCharacter(
 
 
     /*
-        Combining Mark
+        ==========================================
+        ⑤ Combining Mark
+        ==========================================
     */
 
     if (
@@ -1414,10 +1870,12 @@ function getFontForCharacter(
 
 
         if (
+
             hasGlyph(
                 fonts.noto,
                 character
             )
+
         ) {
 
             return fonts.noto;
@@ -1426,10 +1884,12 @@ function getFontForCharacter(
 
 
         if (
+
             hasGlyph(
                 fonts.symbols,
                 character
             )
+
         ) {
 
             return fonts.symbols;
@@ -1441,14 +1901,18 @@ function getFontForCharacter(
 
 
     /*
-        一般文字
+        ==========================================
+        ⑥ Roboto
+        ==========================================
     */
 
     if (
+
         hasGlyph(
             fonts.roboto,
             character
         )
+
     ) {
 
         return fonts.roboto;
@@ -1458,14 +1922,18 @@ function getFontForCharacter(
 
 
     /*
-        Noto
+        ==========================================
+        ⑦ Noto Sans
+        ==========================================
     */
 
     if (
+
         hasGlyph(
             fonts.noto,
             character
         )
+
     ) {
 
         return fonts.noto;
@@ -1475,19 +1943,24 @@ function getFontForCharacter(
 
 
     /*
-        Symbols
+        ==========================================
+        ⑧ Symbols
+        ==========================================
     */
 
     if (
+
         hasGlyph(
             fonts.symbols,
             character
         )
+
     ) {
 
         return fonts.symbols;
 
     }
+
 
 
     return null;
@@ -1497,7 +1970,7 @@ function getFontForCharacter(
 
 
 /* =========================================================
-   取得 Glyph
+   取得 Glyph Path
 ========================================================= */
 
 function getGlyphPath(
@@ -1518,13 +1991,18 @@ function getGlyphPath(
 
 
         console.warn(
+
             "找不到 Glyph：",
+
             character,
+
             "U+" +
+
             character
                 .codePointAt(0)
                 .toString(16)
                 .toUpperCase()
+
         );
 
 
@@ -1554,10 +2032,15 @@ function getGlyphPath(
 
         const path =
             font.getPath(
+
                 character,
+
                 x,
+
                 y,
+
                 fontSize
+
             );
 
 
@@ -1573,13 +2056,15 @@ function getGlyphPath(
 
 
         /*
-            Combining Mark 不佔字寬
+            Combining Mark 不佔寬度
         */
 
         if (
+
             isCombiningMark(
                 character
             )
+
         ) {
 
             advance = 0;
@@ -1599,13 +2084,17 @@ function getGlyphPath(
         };
 
 
-    } catch(error) {
+    } catch (error) {
 
 
         console.error(
+
             "Glyph 轉換錯誤：",
+
             character,
+
             error
+
         );
 
 
@@ -1641,22 +2130,20 @@ function createSVG(
 
 
     const lineHeight =
-        fontSize * 1.25;
+        fontSize * 1.35;
 
 
     const padding =
         fontSize * 0.3;
 
 
-    let lineWidths = [];
-
-
     let maxWidth = 0;
 
 
-
     /*
-        計算文字寬度
+        ==========================================
+        計算每行寬度
+        ==========================================
     */
 
     lines.forEach(
@@ -1674,10 +2161,17 @@ function createSVG(
                 character => {
 
 
+                    /*
+                        Combining Mark
+                        不增加寬度
+                    */
+
                     if (
+
                         isCombiningMark(
                             character
                         )
+
                     ) {
 
                         return;
@@ -1687,10 +2181,15 @@ function createSVG(
 
                     const result =
                         getGlyphPath(
+
                             character,
+
                             0,
+
                             0,
+
                             fontSize
+
                         );
 
 
@@ -1699,9 +2198,6 @@ function createSVG(
 
                 }
             );
-
-
-            lineWidths.push(x);
 
 
             maxWidth =
@@ -1727,15 +2223,19 @@ function createSVG(
 
 
     const width =
+
         maxWidth +
+
         padding * 2;
 
 
     const height =
+
         Math.max(
 
             lines.length *
             lineHeight +
+
             padding * 2,
 
             fontSize +
@@ -1750,10 +2250,13 @@ function createSVG(
 
 
     /*
-        建立 Path
+        ==========================================
+        建立每一個 Path
+        ==========================================
     */
 
     lines.forEach(
+
         (
             line,
             lineIndex
@@ -1784,10 +2287,6 @@ function createSVG(
                 x;
 
 
-            let previousAdvance =
-                0;
-
-
 
             chars.forEach(
                 character => {
@@ -1800,9 +2299,11 @@ function createSVG(
                     */
 
                     if (
+
                         isCombiningMark(
                             character
                         )
+
                     ) {
 
 
@@ -1820,12 +2321,8 @@ function createSVG(
                             try {
 
 
-                                /*
-                                    將組合符號放在
-                                    前一個字元上方
-                                */
-
                                 const mark =
+
                                     markFont.getPath(
 
                                         character,
@@ -1841,6 +2338,7 @@ function createSVG(
 
 
                                 const markPath =
+
                                     mark.toPathData(3);
 
 
@@ -1861,11 +2359,15 @@ function createSVG(
                                 }
 
 
-                            } catch(error) {
+                            } catch (error) {
+
 
                                 console.warn(
-                                    "Combining mark error",
-                                    error
+
+                                    "Combining mark error:",
+
+                                    character
+
                                 );
 
                             }
@@ -1886,6 +2388,7 @@ function createSVG(
                     */
 
                     const result =
+
                         getGlyphPath(
 
                             character,
@@ -1920,10 +2423,6 @@ function createSVG(
                         x;
 
 
-                    previousAdvance =
-                        result.advance;
-
-
                     x +=
                         result.advance;
 
@@ -1936,21 +2435,18 @@ function createSVG(
 
 
     /*
+        ==========================================
         SVG
+        ==========================================
     */
 
     return `<?xml version="1.0" encoding="UTF-8"?>
 
 <svg
     xmlns="http://www.w3.org/2000/svg"
-
     width="${width.toFixed(2)}"
-
     height="${height.toFixed(2)}"
-
-    viewBox="0 0
-        ${width.toFixed(2)}
-        ${height.toFixed(2)}"
+    viewBox="0 0 ${width.toFixed(2)} ${height.toFixed(2)}"
 >
 
     <g fill="#000000">
@@ -1966,7 +2462,7 @@ function createSVG(
 
 
 /* =========================================================
-   產生
+   產生 SVG
 ========================================================= */
 
 function generate() {
@@ -1984,27 +2480,54 @@ function generate() {
 
     if (!text) {
 
+
         alert(
             "請先輸入文字"
         );
+
 
         return;
 
     }
 
 
+
     if (
+
         !fontSize ||
+
         fontSize <= 0
+
     ) {
+
 
         alert(
             "請輸入正確的字體大小"
         );
 
+
         return;
 
     }
+
+
+
+    if (!hasAnyFont()) {
+
+
+        alert(
+
+            "目前沒有可用的字型。\n\n" +
+
+            "請上傳 TTF / OTF 字型。"
+
+        );
+
+
+        return;
+
+    }
+
 
 
     try {
@@ -2016,10 +2539,17 @@ function generate() {
 
         currentSVG =
             createSVG(
+
                 text,
+
                 fontSize
+
             );
 
+
+        /*
+            顯示 SVG
+        */
 
         preview.innerHTML =
             currentSVG;
@@ -2033,10 +2563,12 @@ function generate() {
             "完成：SVG Path";
 
 
-    } catch(error) {
+    } catch (error) {
 
 
-        console.error(error);
+        console.error(
+            error
+        );
 
 
         status.textContent =
@@ -2076,26 +2608,33 @@ function downloadSVG() {
 
     if (!currentSVG) {
 
+
         alert(
             "請先按「送出」"
         );
+
 
         return;
 
     }
 
 
+
     const blob =
+
         new Blob(
 
             [currentSVG],
 
             {
+
                 type:
                     "image/svg+xml;charset=utf-8"
+
             }
 
         );
+
 
 
     const url =
@@ -2105,7 +2644,9 @@ function downloadSVG() {
 
 
     const link =
-        document.createElement("a");
+        document.createElement(
+            "a"
+        );
 
 
     link.href =
@@ -2130,6 +2671,7 @@ function downloadSVG() {
 
 
     setTimeout(
+
         () => {
 
             URL.revokeObjectURL(
@@ -2137,7 +2679,9 @@ function downloadSVG() {
             );
 
         },
+
         1000
+
     );
 
 
@@ -2153,7 +2697,9 @@ function downloadSVG() {
 ========================================================= */
 
 fontFile.addEventListener(
+
     "change",
+
     function(event) {
 
 
@@ -2168,8 +2714,10 @@ fontFile.addEventListener(
         }
 
 
+
         const reader =
             new FileReader();
+
 
 
         reader.onload =
@@ -2180,6 +2728,7 @@ fontFile.addEventListener(
 
 
                     fonts.uploaded =
+
                         opentype.parse(
                             e.target.result
                         );
@@ -2197,13 +2746,13 @@ fontFile.addEventListener(
 
 
                     /*
-                        上傳字型後自動重新產生
+                        自動重新產生
                     */
 
                     generate();
 
 
-                } catch(error) {
+                } catch (error) {
 
 
                     console.error(
@@ -2212,7 +2761,9 @@ fontFile.addEventListener(
 
 
                     alert(
+
                         "無法讀取這個 TTF / OTF 字型檔。"
+
                     );
 
                 }
@@ -2220,11 +2771,13 @@ fontFile.addEventListener(
             };
 
 
+
         reader.readAsArrayBuffer(
             file
         );
 
     }
+
 );
 
 
@@ -2234,31 +2787,50 @@ fontFile.addEventListener(
 ========================================================= */
 
 generateBtn.addEventListener(
+
     "click",
+
     generate
+
 );
 
 
 downloadBtn.addEventListener(
+
     "click",
+
     downloadSVG
+
 );
 
 
+
+/*
+    Ctrl + Enter
+*/
+
 textInput.addEventListener(
+
     "keydown",
+
     event => {
 
+
         if (
+
             event.ctrlKey &&
+
             event.key === "Enter"
+
         ) {
+
 
             generate();
 
         }
 
     }
+
 );
 
 
