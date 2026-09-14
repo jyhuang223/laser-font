@@ -1,18 +1,4 @@
-# Let's create an HTML file for the user that implements the described feature using SVG & OpenType/Opentype.js or canvas-to-path techniques, or SVG text with embedded path fonts or vector converting techniques.
-# Wait, let's write a complete, elegant, standalone HTML file that can be hosted on GitHub Pages.
-# The page needs:
-# 1. Text input area where user types text (default test text: "Eggꒉ:)و ̑̑").
-# 2. "送出" (Submit) button to render SVG text/paths.
-# 3. An SVG display area below.
-# 4. A "下載 SVG" (Download SVG) button that saves an .svg file where the text is converted into actual vector paths (<path> elements instead of <text>) so that when opened in Adobe Illustrator, it is vector paths without needing missing fonts.
-# 5. CSS requirements: font: "Roboto", "Droid Sans", Arial, sans-serif; color: #000000.
-
-# How to convert text to SVG <path> in browser?
-# opentype.js is a great JS library for turning text + font into SVG paths!
-# We can load a Google Font (or opentype font like Roboto / Noto Sans / standard OTF/TTF) via opentype.js, or use Canvas path extraction, or opentype.js directly via CDN.
-# Let's write an HTML file and test/generate it into a downloadable HTML file or display the solution clearly.
-
-html_content = """<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
@@ -225,9 +211,3 @@ html_content = """<!DOCTYPE html>
 
 </body>
 </html>
-"""
-
-with open("index.html", "w", encoding="utf-8") as f:
-    f.write(html_content)
-
-print("index.html successfully created.")
