@@ -3,9 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SVG 文字轉向量路徑產生器</title>
-    <!-- 引入 opentype.js 用於將文字轉為真實 SVG 路徑 -->
-    <script src="https://cdn.jsdelivr.net/npm/opentype.js@latest/dist/opentype.min.js"></script>
+    <title>文字轉 SVG 向量圖形產生器</title>
+    <!-- 引入 Roboto 字型 -->
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <!-- 引入 opentype.js 將字型轉換為真實向量路徑 (Path)，確保 Illustrator 能開啟向量路徑 -->
+    <script src="https://cdn.jsdelivr.net/npm/opentype.js@1.3.4/dist/opentype.min.js"></script>
     <style>
         * {
             box-sizing: border-box;
@@ -13,16 +15,16 @@
         body {
             font-family: "Roboto", "Droid Sans", Arial, sans-serif;
             color: #000000;
-            background-color: #f7f9fa;
+            background-color: #f4f6f8;
             margin: 0;
             padding: 40px 20px;
             display: flex;
             justify-content: center;
         }
         .container {
+            background-color: #ffffff;
             width: 100%;
-            max-width: 800px;
-            background: #ffffff;
+            max-width: 700px;
             padding: 30px;
             border-radius: 12px;
             box-shadow: 0 4px 20px rgba(0,0,0,0.08);
@@ -32,154 +34,175 @@
             margin-top: 0;
             margin-bottom: 20px;
             text-align: center;
+            color: #1a1a1a;
         }
         .input-group {
             display: flex;
             gap: 10px;
-            margin-bottom: 25px;
+            margin-bottom: 20px;
         }
         input[type="text"] {
             flex: 1;
             padding: 12px 16px;
             font-size: 16px;
-            font-family: "Roboto", "Droid Sans", Arial, sans-serif;
-            border: 1px solid #cccccc;
-            border-radius: 6px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
             outline: none;
             transition: border-color 0.2s;
+            font-family: "Roboto", "Droid Sans", Arial, sans-serif;
         }
         input[type="text"]:focus {
-            border-color: #000000;
+            border-color: #0066cc;
         }
         button {
             padding: 12px 24px;
             font-size: 16px;
-            font-family: "Roboto", "Droid Sans", Arial, sans-serif;
-            font-weight: 500;
-            color: #ffffff;
-            background-color: #000000;
+            font-weight: 600;
             border: none;
-            border-radius: 6px;
+            border-radius: 8px;
             cursor: pointer;
-            transition: opacity 0.2s;
+            transition: background-color 0.2s, transform 0.1s;
         }
-        button:hover {
-            opacity: 0.85;
+        button:active {
+            transform: scale(0.98);
         }
-        button:disabled {
-            background-color: #888888;
-            cursor: not-allowed;
+        .btn-submit {
+            background-color: #0066cc;
+            color: #ffffff;
+        }
+        .btn-submit:hover {
+            background-color: #0052a3;
+        }
+        .btn-download {
+            background-color: #28a745;
+            color: #ffffff;
+            display: none;
+            width: 100%;
+            margin-top: 20px;
+        }
+        .btn-download:hover {
+            background-color: #218838;
         }
         .preview-box {
-            border: 1px dashed #dddddd;
+            margin-top: 20px;
+            border: 2px dashed #cccccc;
             border-radius: 8px;
             padding: 20px;
-            background-color: #fafafa;
-            display: flex;
-            justify-content: center;
-            align-items: center;
             min-height: 200px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: #fafafa;
             overflow: auto;
-            margin-bottom: 20px;
         }
-        svg {
+        .preview-box svg {
             max-width: 100%;
             height: auto;
         }
-        .actions {
-            display: flex;
-            justify-content: flex-end;
-            gap: 10px;
+        .info-text {
+            font-size: 13px;
+            color: #666666;
+            margin-top: 15px;
+            line-height: 1.5;
         }
-        .btn-download {
-            background-color: #2e7d32;
-        }
-        .status-text {
+        .status {
             font-size: 14px;
-            color: #666;
+            color: #d9534f;
             margin-bottom: 10px;
-            text-align: center;
         }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h1>SVG 文字轉向量路徑工具</h1>
+    <h1>SVG 文字轉向量路徑產生器</h1>
     
     <div class="input-group">
-        <input type="text" id="textInput" value="Eggꒉ:)و ̑̑" placeholder="請輸入文字...">
-        <button id="btnSubmit" onclick="generateSVG()">送出</button>
+        <input type="text" id="userInput" value="Eggꒉ:)و ̑̑" placeholder="請輸入文字...">
+        <button class="btn-submit" onclick="generateSVG()">送出</button>
     </div>
 
-    <div id="status" class="status-text">正在載入字型檔...</div>
+    <div id="status" class="status"></div>
 
     <div class="preview-box" id="previewBox">
-        <!-- SVG 將會渲染在此 -->
+        <span style="color: #999;">按下「送出」後將在此處顯示 SVG 向量圖形</span>
     </div>
 
-    <div class="actions">
-        <button id="btnDownload" class="btn-download" onclick="downloadSVG()" disabled>下載 SVG 向量檔</button>
+    <button id="downloadBtn" class="btn-download" onclick="downloadSVG()">下載 Illustrator 向量 SVG 檔案</button>
+
+    <div class="info-text">
+        <strong>說明：</strong><br>
+        本工具採用 <code>opentype.js</code> 自動將文字渲染轉換為<strong>真實的外框向量路徑 (Path)</strong>。下載後的 SVG 檔案在 Adobe Illustrator 中開啟時，會直接是可編輯點線的向量路徑（已轉外框），不會因為電腦缺乏特殊字型而發生文字遺失或轉框問題。
     </div>
 </div>
 
 <script>
-    let loadedFont = null;
-    let currentSvgData = "";
+    let font = null;
+    let currentSvgString = '';
 
-    // 載入預設 TTF/OTF 字型檔 (這裡選用包含較多 Unicode/特殊符號 support 的 Google Noto Sans 或 Roboto)
-    // opentype.js 需要直接解析字型檔點陣/向量路徑數據
-    const fontUrl = 'https://fonts.gstatic.com/s/notosans/v36/o-0IIpQlx3QUlC5A4PNr5TRG.ttf';
-
-    window.addEventListener('DOMContentLoaded', () => {
-        const statusEl = document.getElementById('status');
-        opentype.load(fontUrl, function(err, font) {
-            if (err) {
-                statusEl.textContent = '字型載入失敗，將使用瀏覽器預設繪製備案';
-                console.error(err);
-            } else {
-                loadedFont = font;
-                statusEl.textContent = '字型載入完成！請點擊「送出」轉換文字。';
-                generateSVG(); // 初始渲染一次
-            }
-        });
+    // 載入預設的 Roboto 字型檔 (TTF) 用於轉路徑
+    opentype.load('https://fonts.gstatic.com/s/roboto/v30/KFOmCnqEu92Fr1Mu4mxP.ttf', function(err, loadedFont) {
+        if (err) {
+            console.error('字型載入失敗:', err);
+            document.getElementById('status').innerText = '預設字型載入失敗，將使用純文字 SVG 備用模式。';
+        } else {
+            font = loadedFont;
+            console.log('Roboto 字型載入成功');
+        }
     });
 
     function generateSVG() {
-        const text = document.getElementById('textInput').value || ' ';
+        const text = document.getElementById('userInput').value || "Eggꒉ:)و ̑̑";
         const previewBox = document.getElementById('previewBox');
-        const btnDownload = document.getElementById('btnDownload');
+        const downloadBtn = document.getElementById('downloadBtn');
+        const status = document.getElementById('status');
+        status.innerText = '';
+
         const fontSize = 72;
+        const color = "#000000";
 
-        if (loadedFont) {
-            // 使用 opentype.js 將文字轉為真正的向量 <path>
-            const path = loadedFont.getPath(text, 20, 100, fontSize);
-            const bbox = path.getBoundingBox();
-            
-            const width = Math.max(Math.ceil(bbox.x2 - bbox.x1) + 40, 200);
-            const height = Math.max(Math.ceil(bbox.y2 - bbox.y1) + 60, 120);
+        if (font) {
+            // 使用 opentype.js 轉成真實 Path（向量路徑）
+            try {
+                // 計算文字邊界與寬度
+                const boundingBox = font.getBoundingBox(text, fontSize);
+                const width = Math.max(Math.ceil(font.getAdvanceWidth(text, fontSize)) + 40, 100);
+                const height = Math.max(Math.ceil(boundingBox.y2 - boundingBox.y1) + 40, 100);
+                
+                // 取得向量路徑 (x: 20, y: 70 基準線)
+                const path = font.getPath(text, 20, 70, fontSize);
+                path.fill = color;
+                const pathSvg = path.toSVG(4);
 
-            // 修正路徑相對座標偏移
-            const pathData = loadedFont.getPath(text, 20 - bbox.x1 + 20, -bbox.y1 + 20, fontSize).toPathData(4);
-
-            const svgString = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${width} ${height}" width="${width}" height="${height}">
-  <path d="${pathData}" fill="#000000" />
+                // 組裝完整的 SVG
+                currentSvgString = `<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}">
+  <!-- 由 OpenType.js 轉換之純向量路徑 (Vector Path) -->
+  <g fill="${color}">
+    ${pathSvg}
+  </g>
 </svg>`;
 
-            currentSvgData = svgString;
-            previewBox.innerHTML = svgString;
-            btnDownload.disabled = false;
+                previewBox.innerHTML = currentSvgString;
+                downloadBtn.style.display = 'block';
+            } catch (e) {
+                console.error(e);
+                fallbackSVG(text, fontSize, color);
+            }
         } else {
-            // 備用方案：若 opentype 載入失敗，輸出繪製向量 Text/Canvas SVG
-            const width = 500;
-            const height = 150;
-            const svgString = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${width} ${height}" width="${width}" height="${height}">
-  <text x="20" y="90" font-family="'Roboto', 'Droid Sans', Arial, sans-serif" font-size="${fontSize}" fill="#000000">${escapeXml(text)}</text>
-</svg>`;
-            currentSvgData = svgString;
-            previewBox.innerHTML = svgString;
-            btnDownload.disabled = false;
+            fallbackSVG(text, fontSize, color);
         }
+    }
+
+    // 備用方案：若字型未加載完畢，直接輸出包含 <text> 標籤的 SVG
+    function fallbackSVG(text, fontSize, color) {
+        const width = text.length * fontSize * 0.7 + 40;
+        const height = fontSize + 60;
+        currentSvgString = `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}">
+  <text x="20" y="${fontSize}" font-family="Roboto, Droid Sans, Arial, sans-serif" font-size="${fontSize}" fill="${color}">${escapeXml(text)}</text>
+</svg>`;
+        document.getElementById('previewBox').innerHTML = currentSvgString;
+        document.getElementById('downloadBtn').style.display = 'block';
     }
 
     function escapeXml(unsafe) {
@@ -195,16 +218,16 @@
     }
 
     function downloadSVG() {
-        if (!currentSvgData) return;
+        if (!currentSvgString) return;
 
-        const blob = new Blob([currentSvgData], { type: 'image/svg+xml;charset=utf-8' });
+        const blob = new Blob([currentSvgString], { type: 'image/svg+xml;charset=utf-8' });
         const url = URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = 'vector-text.svg';
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'text-vector-path.svg';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
         URL.revokeObjectURL(url);
     }
 </script>
