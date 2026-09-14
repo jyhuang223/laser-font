@@ -3,10 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>文字轉 SVG 向量圖形產生器</title>
-    <!-- 引入 Roboto 字型 -->
+    <title>文字轉 SVG 純向量路徑產生器</title>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
-    <!-- 引入 opentype.js 將字型轉換為真實向量路徑 (Path)，確保 Illustrator 能開啟向量路徑 -->
+    <!-- opentype.js: 用於解析字型並轉為純向量路徑 (path) -->
     <script src="https://cdn.jsdelivr.net/npm/opentype.js@1.3.4/dist/opentype.min.js"></script>
     <style>
         * {
@@ -50,6 +49,7 @@
             outline: none;
             transition: border-color 0.2s;
             font-family: "Roboto", "Droid Sans", Arial, sans-serif;
+            color: #000000;
         }
         input[type="text"]:focus {
             border-color: #0066cc;
@@ -72,6 +72,10 @@
         }
         .btn-submit:hover {
             background-color: #0052a3;
+        }
+        .btn-submit:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
         }
         .btn-download {
             background-color: #28a745;
@@ -99,122 +103,92 @@
             max-width: 100%;
             height: auto;
         }
-        .info-text {
-            font-size: 13px;
-            color: #666666;
-            margin-top: 15px;
-            line-height: 1.5;
-        }
         .status {
             font-size: 14px;
-            color: #d9534f;
+            color: #666666;
             margin-bottom: 10px;
+            text-align: center;
         }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h1>SVG 文字轉向量路徑產生器</h1>
+    <h1>SVG 純向量曲線路徑產生器</h1>
     
+    <div class="status" id="status">正在載入基礎向量字型檔...</div>
+
     <div class="input-group">
         <input type="text" id="userInput" value="Eggꒉ:)و ̑̑" placeholder="請輸入文字...">
-        <button class="btn-submit" onclick="generateSVG()">送出</button>
+        <button class="btn-submit" id="submitBtn" onclick="generateSVG()" disabled>送出</button>
     </div>
-
-    <div id="status" class="status"></div>
 
     <div class="preview-box" id="previewBox">
-        <span style="color: #999;">按下「送出」後將在此處顯示 SVG 向量圖形</span>
+        <span style="color: #999;">請等待字型初始化後點擊「送出」</span>
     </div>
 
-    <button id="downloadBtn" class="btn-download" onclick="downloadSVG()">下載 Illustrator 向量 SVG 檔案</button>
-
-    <div class="info-text">
-        <strong>說明：</strong><br>
-        本工具採用 <code>opentype.js</code> 自動將文字渲染轉換為<strong>真實的外框向量路徑 (Path)</strong>。下載後的 SVG 檔案在 Adobe Illustrator 中開啟時，會直接是可編輯點線的向量路徑（已轉外框），不會因為電腦缺乏特殊字型而發生文字遺失或轉框問題。
-    </div>
+    <button id="downloadBtn" class="btn-download" onclick="downloadSVG()">下載向量曲線檔案 (.svg)</button>
 </div>
 
 <script>
-    let font = null;
+    let loadedFont = null;
     let currentSvgString = '';
 
-    // 載入預設的 Roboto 字型檔 (TTF) 用於轉路徑
-    opentype.load('https://fonts.gstatic.com/s/roboto/v30/KFOmCnqEu92Fr1Mu4mxP.ttf', function(err, loadedFont) {
+    // 載入完整的 Roboto TTF 檔案作為外框運算基礎
+    opentype.load('https://fonts.gstatic.com/s/roboto/v30/KFOmCnqEu92Fr1Mu4mxP.ttf', function(err, font) {
+        const statusEl = document.getElementById('status');
+        const submitBtn = document.getElementById('submitBtn');
+        const previewBox = document.getElementById('previewBox');
+
         if (err) {
             console.error('字型載入失敗:', err);
-            document.getElementById('status').innerText = '預設字型載入失敗，將使用純文字 SVG 備用模式。';
+            statusEl.style.color = '#d9534f';
+            statusEl.innerText = '字型檔載入失敗，請檢查網路連線。';
         } else {
-            font = loadedFont;
-            console.log('Roboto 字型載入成功');
+            loadedFont = font;
+            statusEl.style.color = '#28a745';
+            statusEl.innerText = '✓ 向量繪製引擎已就緒，請點擊「送出」。';
+            submitBtn.disabled = false;
+            previewBox.innerHTML = '<span style="color: #999;">按下「送出」後將產生純外框曲線 SVG</span>';
         }
     });
 
     function generateSVG() {
+        if (!loadedFont) {
+            alert('字型檔尚未載入完成，請稍後再試');
+            return;
+        }
+
         const text = document.getElementById('userInput').value || "Eggꒉ:)و ̑̑";
         const previewBox = document.getElementById('previewBox');
         const downloadBtn = document.getElementById('downloadBtn');
-        const status = document.getElementById('status');
-        status.innerText = '';
 
         const fontSize = 72;
         const color = "#000000";
 
-        if (font) {
-            // 使用 opentype.js 轉成真實 Path（向量路徑）
-            try {
-                // 計算文字邊界與寬度
-                const boundingBox = font.getBoundingBox(text, fontSize);
-                const width = Math.max(Math.ceil(font.getAdvanceWidth(text, fontSize)) + 40, 100);
-                const height = Math.max(Math.ceil(boundingBox.y2 - boundingBox.y1) + 40, 100);
-                
-                // 取得向量路徑 (x: 20, y: 70 基準線)
-                const path = font.getPath(text, 20, 70, fontSize);
-                path.fill = color;
-                const pathSvg = path.toSVG(4);
+        try {
+            // 透過 opentype.js 計算點陣外框並抽取點線向量數據 (d 屬性)
+            const path = loadedFont.getPath(text, 20, 80, fontSize);
+            const pathData = path.toPathData(4); // 取得 d="M... C... Z" 純曲線路徑
 
-                // 組裝完整的 SVG
-                currentSvgString = `<?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}">
-  <!-- 由 OpenType.js 轉換之純向量路徑 (Vector Path) -->
-  <g fill="${color}">
-    ${pathSvg}
-  </g>
+            // 計算圖形邊界
+            const boundingBox = loadedFont.getBoundingBox(text, fontSize);
+            const width = Math.max(Math.ceil(loadedFont.getAdvanceWidth(text, fontSize)) + 40, 120);
+            const height = Math.max(Math.ceil(boundingBox.y2 - boundingBox.y1) + 50, 120);
+
+            // 構建「完全不包含 <text>、<font> 或 style 夾帶」的純向量外框 SVG
+            currentSvgString = `<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg xmlns="http://www.w3.org/2000/svg" version="1.1" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}">
+  <!-- 純外框曲線路徑 (Path)，在 Illustrator 中無需轉外框 -->
+  <path fill="${color}" d="${pathData}" />
 </svg>`;
 
-                previewBox.innerHTML = currentSvgString;
-                downloadBtn.style.display = 'block';
-            } catch (e) {
-                console.error(e);
-                fallbackSVG(text, fontSize, color);
-            }
-        } else {
-            fallbackSVG(text, fontSize, color);
+            previewBox.innerHTML = currentSvgString;
+            downloadBtn.style.display = 'block';
+        } catch (e) {
+            console.error('曲線轉換錯誤:', e);
+            alert('轉換失敗，請確定輸入內容無無效字元');
         }
-    }
-
-    // 備用方案：若字型未加載完畢，直接輸出包含 <text> 標籤的 SVG
-    function fallbackSVG(text, fontSize, color) {
-        const width = text.length * fontSize * 0.7 + 40;
-        const height = fontSize + 60;
-        currentSvgString = `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}">
-  <text x="20" y="${fontSize}" font-family="Roboto, Droid Sans, Arial, sans-serif" font-size="${fontSize}" fill="${color}">${escapeXml(text)}</text>
-</svg>`;
-        document.getElementById('previewBox').innerHTML = currentSvgString;
-        document.getElementById('downloadBtn').style.display = 'block';
-    }
-
-    function escapeXml(unsafe) {
-        return unsafe.replace(/[<>&'"]/g, function (c) {
-            switch (c) {
-                case '<': return '&lt;';
-                case '>': return '&gt;';
-                case '&': return '&amp;';
-                case '\'': return '&apos;';
-                case '"': return '&quot;';
-            }
-        });
     }
 
     function downloadSVG() {
@@ -224,7 +198,7 @@
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = 'text-vector-path.svg';
+        a.download = 'vector-path.svg';
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
