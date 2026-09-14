@@ -1,259 +1,697 @@
 <!DOCTYPE html>
-<html lang="zh-TW">
+<html lang="zh-Hant">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SVG 高精細純向量曲線產生器</title>
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
-    <style>
-        * {
-            box-sizing: border-box;
-        }
-        body {
-            font-family: "Roboto", "Droid Sans", Arial, sans-serif;
-            color: #000000;
-            background-color: #f4f6f8;
-            margin: 0;
-            padding: 40px 20px;
-            display: flex;
-            justify-content: center;
-        }
-        .container {
-            background-color: #ffffff;
-            width: 100%;
-            max-width: 750px;
-            padding: 30px;
-            border-radius: 12px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
-        }
-        h1 {
-            font-size: 24px;
-            margin-top: 0;
-            margin-bottom: 20px;
-            text-align: center;
-            color: #1a1a1a;
-        }
-        .input-group {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 20px;
-        }
-        input[type="text"] {
-            flex: 1;
-            padding: 12px 16px;
-            font-size: 16px;
-            border: 2px solid #e0e0e0;
-            border-radius: 8px;
-            outline: none;
-            transition: border-color 0.2s;
-            font-family: "Roboto", "Droid Sans", Arial, sans-serif;
-            color: #000000;
-        }
-        input[type="text"]:focus {
-            border-color: #0066cc;
-        }
-        button {
-            padding: 12px 24px;
-            font-size: 16px;
-            font-weight: 600;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: background-color 0.2s, transform 0.1s;
-        }
-        button:active {
-            transform: scale(0.98);
-        }
-        .btn-submit {
-            background-color: #0066cc;
-            color: #ffffff;
-        }
-        .btn-submit:hover {
-            background-color: #0052a3;
-        }
-        .btn-download {
-            background-color: #28a745;
-            color: #ffffff;
-            display: none;
-            width: 100%;
-            margin-top: 20px;
-        }
-        .btn-download:hover {
-            background-color: #218838;
-        }
-        .preview-box {
-            margin-top: 20px;
-            border: 2px dashed #cccccc;
-            border-radius: 8px;
-            padding: 20px;
-            min-height: 200px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background-color: #fafafa;
-            overflow: auto;
-        }
-        .preview-box svg {
-            max-width: 100%;
-            height: auto;
-        }
-        .info-text {
-            font-size: 13px;
-            color: #666666;
-            margin-top: 15px;
-            line-height: 1.5;
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <!-- 載入瀏覽器專用 Potrace 腳本 -->
-    <script src="https://cdn.jsdelivr.net/gh/kilobtye/potrace@master/potrace.js"></script>
-    <script src="https://unpkg.com/potrace-js@1.0.0/potrace.js"></script>
+<title>文字轉 SVG 向量路徑</title>
+
+<!-- OpenType.js：負責將文字 Glyph 轉成真正的 SVG Path -->
+<script src="https://cdn.jsdelivr.net/npm/opentype.js@1.3.4/dist/opentype.min.js"></script>
+
+<style>
+    * {
+        box-sizing: border-box;
+    }
+
+    body {
+        margin: 0;
+        padding: 40px 20px;
+        background: #f5f6f8;
+        color: #222;
+        font-family: "Roboto", "Droid Sans", Arial, sans-serif;
+    }
+
+    .container {
+        width: min(100%, 1000px);
+        margin: auto;
+    }
+
+    .header {
+        margin-bottom: 28px;
+    }
+
+    .header h1 {
+        margin: 0 0 8px;
+        font-size: 28px;
+        font-weight: 700;
+    }
+
+    .header p {
+        margin: 0;
+        color: #777;
+        font-size: 14px;
+    }
+
+    .card {
+        background: #fff;
+        border-radius: 16px;
+        padding: 24px;
+        box-shadow: 0 8px 30px rgba(0,0,0,.06);
+        margin-bottom: 20px;
+    }
+
+    label {
+        display: block;
+        font-size: 14px;
+        font-weight: 600;
+        margin-bottom: 8px;
+    }
+
+    textarea {
+        width: 100%;
+        min-height: 130px;
+        resize: vertical;
+        border: 1px solid #ddd;
+        border-radius: 10px;
+        padding: 15px;
+        font-family: "Roboto", "Droid Sans", Arial, sans-serif;
+        font-size: 32px;
+        line-height: 1.5;
+        color: #000000;
+        outline: none;
+        transition: .2s;
+    }
+
+    textarea:focus {
+        border-color: #888;
+        box-shadow: 0 0 0 3px rgba(0,0,0,.05);
+    }
+
+    .settings {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 16px;
+        margin-top: 18px;
+    }
+
+    .field {
+        display: flex;
+        flex-direction: column;
+    }
+
+    input,
+    select {
+        width: 100%;
+        height: 44px;
+        border: 1px solid #ddd;
+        border-radius: 9px;
+        padding: 0 12px;
+        font-size: 15px;
+        background: #fff;
+        outline: none;
+    }
+
+    input:focus,
+    select:focus {
+        border-color: #888;
+    }
+
+    .buttons {
+        display: flex;
+        gap: 10px;
+        margin-top: 20px;
+    }
+
+    button {
+        border: 0;
+        border-radius: 9px;
+        padding: 12px 22px;
+        font-size: 15px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: .2s;
+    }
+
+    .btn-primary {
+        background: #111;
+        color: white;
+    }
+
+    .btn-primary:hover {
+        background: #333;
+        transform: translateY(-1px);
+    }
+
+    .btn-download {
+        background: #e9ecef;
+        color: #222;
+    }
+
+    .btn-download:hover {
+        background: #dfe3e6;
+    }
+
+    button:disabled {
+        opacity: .4;
+        cursor: not-allowed;
+        transform: none;
+    }
+
+    .preview-title {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 14px;
+    }
+
+    .preview-title h2 {
+        margin: 0;
+        font-size: 18px;
+    }
+
+    .status {
+        font-size: 13px;
+        color: #777;
+    }
+
+    .preview {
+        width: 100%;
+        min-height: 280px;
+        border: 1px solid #ddd;
+        border-radius: 12px;
+        background:
+            linear-gradient(45deg, #f0f0f0 25%, transparent 25%),
+            linear-gradient(-45deg, #f0f0f0 25%, transparent 25%),
+            linear-gradient(45deg, transparent 75%, #f0f0f0 75%),
+            linear-gradient(-45deg, transparent 75%, #f0f0f0 75%);
+        background-size: 20px 20px;
+        background-position: 0 0, 0 10px, 10px -10px, -10px 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        overflow: auto;
+        padding: 30px;
+    }
+
+    .preview svg {
+        max-width: 100%;
+        height: auto;
+        display: block;
+    }
+
+    .info {
+        margin-top: 16px;
+        padding: 14px 16px;
+        border-radius: 9px;
+        background: #f7f7f7;
+        font-size: 13px;
+        line-height: 1.7;
+        color: #666;
+    }
+
+    .info strong {
+        color: #222;
+    }
+
+    @media (max-width: 650px) {
+
+        body {
+            padding: 20px 12px;
+        }
+
+        .card {
+            padding: 18px;
+        }
+
+        .settings {
+            grid-template-columns: 1fr;
+        }
+
+        textarea {
+            font-size: 24px;
+        }
+
+        .buttons {
+            flex-direction: column;
+        }
+
+        button {
+            width: 100%;
+        }
+    }
+</style>
 </head>
+
 <body>
 
 <div class="container">
-    <h1>SVG 高精細純向量曲線產生器</h1>
-    
-    <div class="input-group">
-        <input type="text" id="userInput" value="Eggꒉ:)و ̑̑" placeholder="請輸入文字...">
-        <button class="btn-submit" onclick="generateSVG()">送出</button>
+
+    <div class="header">
+        <h1>文字 → SVG 向量路徑</h1>
+        <p>輸入文字後轉換成 Illustrator 可編輯的向量外框</p>
     </div>
 
-    <div class="preview-box" id="previewBox">
-        <span style="color: #999;">按下「送出」後將產生高精細純向量曲線 (無 &lt;text&gt; 標籤)</span>
+    <div class="card">
+
+        <label for="textInput">輸入文字</label>
+
+        <textarea id="textInput">Eggꒉ:)و ̑̑</textarea>
+
+        <div class="settings">
+
+            <div class="field">
+                <label for="fontSize">字體大小</label>
+                <input
+                    id="fontSize"
+                    type="number"
+                    value="120"
+                    min="10"
+                    max="1000"
+                >
+            </div>
+
+            <div class="field">
+                <label for="fontSelect">字型</label>
+                <select id="fontSelect">
+                    <option value="roboto">Roboto</option>
+                </select>
+            </div>
+
+        </div>
+
+        <div class="buttons">
+
+            <button
+                class="btn-primary"
+                id="generateBtn"
+            >
+                送出
+            </button>
+
+            <button
+                class="btn-download"
+                id="downloadBtn"
+                disabled
+            >
+                下載 SVG 向量檔
+            </button>
+
+        </div>
+
     </div>
 
-    <button id="downloadBtn" class="btn-download" onclick="downloadSVG()">下載 Illustrator 高精細向量 SVG 檔案</button>
 
-    <div class="info-text">
-        <strong>說明：</strong><br>
-        已修復套件載入與 <code>Potrace is not defined</code> 問題。目前採用 8x 高解析採樣與平滑貝茲曲線擬合，匯出的 SVG 為 100% 純向量外框，可直接在 Illustrator 中開啟與編輯。
+    <div class="card">
+
+        <div class="preview-title">
+            <h2>向量預覽</h2>
+            <span
+                class="status"
+                id="status"
+            >
+                尚未轉換
+            </span>
+        </div>
+
+        <div
+            class="preview"
+            id="preview"
+        >
+            <span style="color:#999;">
+                請輸入文字後按「送出」
+            </span>
+        </div>
+
+        <div class="info">
+            <strong>SVG 說明：</strong><br>
+            下載的 SVG 不是一般的 SVG 文字，而是由
+            <strong>Path 路徑</strong>組成。
+            Illustrator 開啟後可直接編輯向量節點，不需要再執行「文字 → 建立外框」。
+        </div>
+
     </div>
+
 </div>
 
-<canvas id="textCanvas" style="display:none;"></canvas>
 
 <script>
-    // 全域安全防護機制：確保 Potrace 變數始終存在
-    if (typeof Potrace === 'undefined') {
-        window.Potrace = (function() {
-            function Bitmap(w, h) {
-                this.w = w; this.h = h; this.size = w * h;
-                this.data = new Uint8Array(this.size);
-            }
-            Bitmap.prototype.at = function(x, y) {
-                return (x >= 0 && x < this.w && y >= 0 && y < this.h) ? this.data[y * this.w + x] : 0;
-            };
 
-            var param = { turnpolicy: "minority", tresh: 128, alphamax: 1.33, optcurve: true, opttolerance: 0.2 };
-            var bm = null;
+/* =========================================================
+   Roboto 字型
+   ========================================================= */
 
-            return {
-                setParameter: function(p) { for (var k in p) param[k] = p[k]; },
-                loadImage: function(canvas) {
-                    var ctx = canvas.getContext('2d');
-                    var w = canvas.width, h = canvas.height;
-                    var imgData = ctx.getImageData(0, 0, w, h);
-                    bm = new Bitmap(w, h);
-                    var d = imgData.data;
-                    for (var i = 0; i < bm.size; i++) {
-                        var lum = 0.2989 * d[i * 4] + 0.5870 * d[i * 4 + 1] + 0.1140 * d[i * 4 + 2];
-                        bm.data[i] = lum < param.tresh ? 1 : 0;
-                    }
-                },
-                process: function(cb) { if (cb) cb(); },
-                getSVG: function() {
-                    return `<path d="M 0 0" fill="#000000"/>`;
-                }
-            };
-        })();
+const FONT_URL =
+    "https://cdn.jsdelivr.net/npm/@fontsource/roboto@5.1.0/files/roboto-latin-400-normal.ttf";
+
+
+let font = null;
+let currentSVG = "";
+let currentText = "";
+
+
+/* =========================================================
+   載入字型
+   ========================================================= */
+
+async function loadFont() {
+
+    const status = document.getElementById("status");
+
+    status.textContent = "正在載入字型…";
+
+    try {
+
+        font = await opentype.load(FONT_URL);
+
+        status.textContent = "字型已載入";
+
+        console.log("Roboto loaded");
+
+    } catch (error) {
+
+        console.error(error);
+
+        status.textContent =
+            "字型載入失敗，請確認網路連線";
+
     }
 
-    let currentSvgString = '';
+}
 
-    function generateSVG() {
-        const text = document.getElementById('userInput').value || "Eggꒉ:)و ̑̑";
-        const previewBox = document.getElementById('previewBox');
-        const downloadBtn = document.getElementById('downloadBtn');
 
-        const canvas = document.getElementById('textCanvas');
-        const ctx = canvas.getContext('2d');
+/* =========================================================
+   Escape XML
+   ========================================================= */
 
-        // 使用 8 倍超高解析度放大繪製 (Supersampling)，解決邊緣鋸齒
-        const scaleFactor = 8;
-        const baseFontSize = 60;
-        const fontSize = baseFontSize * scaleFactor;
-        const fontStyle = `${fontSize}px "Roboto", "Droid Sans", Arial, sans-serif`;
+function escapeXML(text) {
 
-        ctx.font = fontStyle;
-        const textMetrics = ctx.measureText(text);
+    return text
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&apos;");
 
-        const hiresWidth = Math.max(Math.ceil(textMetrics.width) + (100 * scaleFactor), 400 * scaleFactor);
-        const hiresHeight = fontSize + (100 * scaleFactor);
+}
 
-        canvas.width = hiresWidth;
-        canvas.height = hiresHeight;
 
-        // 清空背景並填滿純白
-        ctx.fillStyle = '#ffffff';
-        ctx.fillRect(0, 0, hiresWidth, hiresHeight);
+/* =========================================================
+   文字轉 Path
+   ========================================================= */
 
-        // 繪製黑色文字
-        ctx.fillStyle = '#000000';
-        ctx.font = fontStyle;
-        ctx.textBaseline = 'middle';
-        ctx.fillText(text, 50 * scaleFactor, hiresHeight / 2);
+function createSVG(text, fontSize) {
 
-        // 設定 Potrace 曲線平滑最佳化參數
-        if (typeof Potrace.setParameter === 'function') {
-            Potrace.setParameter({
-                turnpolicy: "minority",
-                tresh: 128,
-                alphamax: 1.33,
-                optcurve: true,
-                opttolerance: 0.2
-            });
+    if (!font) {
+        throw new Error("Font not loaded");
+    }
+
+    /*
+        使用 OpenType.js：
+
+        font.getPath()
+        
+        取得真正的 Glyph Path。
+    */
+
+    const lines = text.split("\n");
+
+    const lineHeight = fontSize * 1.25;
+
+    let paths = [];
+
+    let maxWidth = 0;
+
+    let currentY = fontSize;
+
+
+    lines.forEach((line) => {
+
+        const path = font.getPath(
+            line,
+            0,
+            currentY,
+            fontSize
+        );
+
+        const box = path.getBoundingBox();
+
+        const width =
+            box.x2 - box.x1;
+
+        if (width > maxWidth) {
+            maxWidth = width;
         }
 
-        Potrace.loadImage(canvas);
-        Potrace.process(function() {
-            const rawSvg = Potrace.getSVG(1.0);
+        /*
+            轉成 SVG path data
+        */
 
-            const parser = new DOMParser();
-            const doc = parser.parseFromString(rawSvg, 'image/svg+xml');
-            const pathNode = doc.querySelector('path');
-            const pathData = pathNode ? pathNode.getAttribute('d') : '';
+        const pathData = path.toPathData(3);
 
-            const displayWidth = Math.round(hiresWidth / scaleFactor);
-            const displayHeight = Math.round(hiresHeight / scaleFactor);
+        if (pathData) {
 
-            currentSvgString = `<?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<svg xmlns="http://www.w3.org/2000/svg" version="1.1" width="${displayWidth}" height="${displayHeight}" viewBox="0 0 ${hiresWidth} ${hiresHeight}">
-  <path d="${pathData}" fill="#000000" fill-rule="evenodd"/>
-</svg>`;
+            paths.push({
+                data: pathData
+            });
 
-            previewBox.innerHTML = currentSvgString;
-            downloadBtn.style.display = 'block';
-        });
+        }
+
+        currentY += lineHeight;
+
+    });
+
+
+    const totalHeight =
+        lines.length * lineHeight;
+
+
+    /*
+        加一點安全邊界
+    */
+
+    const padding = fontSize * 0.15;
+
+    const width =
+        Math.max(maxWidth + padding * 2, 1);
+
+    const height =
+        Math.max(totalHeight + padding * 2, 1);
+
+
+    /*
+        因為 OpenType 的 Y 軸方向與 SVG 不同，
+        所以使用 group transform 修正座標。
+    */
+
+    let pathHTML = "";
+
+    paths.forEach(item => {
+
+        pathHTML += `
+        <path
+            d="${item.data}"
+            fill="#000000"
+        />
+        `;
+
+    });
+
+
+    const svg = `
+<svg
+    xmlns="http://www.w3.org/2000/svg"
+    width="${width}"
+    height="${height}"
+    viewBox="0 0 ${width} ${height}"
+>
+    <g
+        fill="#000000"
+        transform="translate(${padding}, ${padding})"
+    >
+        ${pathHTML}
+    </g>
+</svg>
+`;
+
+    return svg;
+
+}
+
+
+/* =========================================================
+   產生 SVG
+   ========================================================= */
+
+async function generate() {
+
+    const textInput =
+        document.getElementById("textInput");
+
+    const fontSizeInput =
+        document.getElementById("fontSize");
+
+    const preview =
+        document.getElementById("preview");
+
+    const status =
+        document.getElementById("status");
+
+    const downloadBtn =
+        document.getElementById("downloadBtn");
+
+
+    const text =
+        textInput.value;
+
+    const fontSize =
+        parseFloat(fontSizeInput.value);
+
+
+    if (!text) {
+
+        alert("請先輸入文字");
+
+        return;
+
     }
 
-    window.onload = function() {
-        generateSVG();
-    };
 
-    function downloadSVG() {
-        if (!currentSvgString) return;
+    if (!font) {
 
-        const blob = new Blob([currentSvgString], { type: 'image/svg+xml;charset=utf-8' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = 'smooth-vector-path.svg';
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
+        await loadFont();
+
     }
+
+
+    try {
+
+        status.textContent =
+            "正在轉換成向量…";
+
+
+        const svg =
+            createSVG(
+                text,
+                fontSize
+            );
+
+
+        currentSVG = svg;
+        currentText = text;
+
+
+        preview.innerHTML = svg;
+
+
+        downloadBtn.disabled = false;
+
+
+        status.textContent =
+            "完成：已轉換為 Path 向量";
+
+    } catch (error) {
+
+        console.error(error);
+
+        status.textContent =
+            "轉換失敗";
+
+        alert(
+            "文字轉向量失敗。\n\n" +
+            error.message
+        );
+
+    }
+
+}
+
+
+/* =========================================================
+   下載 SVG
+   ========================================================= */
+
+function downloadSVG() {
+
+    if (!currentSVG) {
+
+        alert("請先按「送出」");
+
+        return;
+
+    }
+
+
+    const blob =
+        new Blob(
+            [currentSVG],
+            {
+                type: "image/svg+xml;charset=utf-8"
+            }
+        );
+
+
+    const url =
+        URL.createObjectURL(blob);
+
+
+    const a =
+        document.createElement("a");
+
+
+    a.href = url;
+
+    a.download =
+        "text-outline.svg";
+
+
+    document.body.appendChild(a);
+
+    a.click();
+
+    document.body.removeChild(a);
+
+
+    URL.revokeObjectURL(url);
+
+}
+
+
+/* =========================================================
+   Events
+   ========================================================= */
+
+document
+    .getElementById("generateBtn")
+    .addEventListener(
+        "click",
+        generate
+    );
+
+
+document
+    .getElementById("downloadBtn")
+    .addEventListener(
+        "click",
+        downloadSVG
+    );
+
+
+/* Enter 快速產生 */
+
+document
+    .getElementById("textInput")
+    .addEventListener(
+        "keydown",
+        function(e) {
+
+            if (
+                e.ctrlKey &&
+                e.key === "Enter"
+            ) {
+
+                generate();
+
+            }
+
+        }
+    );
+
+
+/* 啟動時載入字型 */
+
+loadFont();
+
 </script>
 
 </body>
