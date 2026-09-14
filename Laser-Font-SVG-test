@@ -1,0 +1,233 @@
+# Let's create an HTML file for the user that implements the described feature using SVG & OpenType/Opentype.js or canvas-to-path techniques, or SVG text with embedded path fonts or vector converting techniques.
+# Wait, let's write a complete, elegant, standalone HTML file that can be hosted on GitHub Pages.
+# The page needs:
+# 1. Text input area where user types text (default test text: "Eggꒉ:)و ̑̑").
+# 2. "送出" (Submit) button to render SVG text/paths.
+# 3. An SVG display area below.
+# 4. A "下載 SVG" (Download SVG) button that saves an .svg file where the text is converted into actual vector paths (<path> elements instead of <text>) so that when opened in Adobe Illustrator, it is vector paths without needing missing fonts.
+# 5. CSS requirements: font: "Roboto", "Droid Sans", Arial, sans-serif; color: #000000.
+
+# How to convert text to SVG <path> in browser?
+# opentype.js is a great JS library for turning text + font into SVG paths!
+# We can load a Google Font (or opentype font like Roboto / Noto Sans / standard OTF/TTF) via opentype.js, or use Canvas path extraction, or opentype.js directly via CDN.
+# Let's write an HTML file and test/generate it into a downloadable HTML file or display the solution clearly.
+
+html_content = """<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SVG 文字轉向量路徑產生器</title>
+    <!-- 引入 opentype.js 用於將文字轉為真實 SVG 路徑 -->
+    <script src="https://cdn.jsdelivr.net/npm/opentype.js@latest/dist/opentype.min.js"></script>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+        body {
+            font-family: "Roboto", "Droid Sans", Arial, sans-serif;
+            color: #000000;
+            background-color: #f7f9fa;
+            margin: 0;
+            padding: 40px 20px;
+            display: flex;
+            justify-content: center;
+        }
+        .container {
+            width: 100%;
+            max-width: 800px;
+            background: #ffffff;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        }
+        h1 {
+            font-size: 24px;
+            margin-top: 0;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .input-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 25px;
+        }
+        input[type="text"] {
+            flex: 1;
+            padding: 12px 16px;
+            font-size: 16px;
+            font-family: "Roboto", "Droid Sans", Arial, sans-serif;
+            border: 1px solid #cccccc;
+            border-radius: 6px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+        input[type="text"]:focus {
+            border-color: #000000;
+        }
+        button {
+            padding: 12px 24px;
+            font-size: 16px;
+            font-family: "Roboto", "Droid Sans", Arial, sans-serif;
+            font-weight: 500;
+            color: #ffffff;
+            background-color: #000000;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+        button:hover {
+            opacity: 0.85;
+        }
+        button:disabled {
+            background-color: #888888;
+            cursor: not-allowed;
+        }
+        .preview-box {
+            border: 1px dashed #dddddd;
+            border-radius: 8px;
+            padding: 20px;
+            background-color: #fafafa;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 200px;
+            overflow: auto;
+            margin-bottom: 20px;
+        }
+        svg {
+            max-width: 100%;
+            height: auto;
+        }
+        .actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+        .btn-download {
+            background-color: #2e7d32;
+        }
+        .status-text {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>SVG 文字轉向量路徑工具</h1>
+    
+    <div class="input-group">
+        <input type="text" id="textInput" value="Eggꒉ:)و ̑̑" placeholder="請輸入文字...">
+        <button id="btnSubmit" onclick="generateSVG()">送出</button>
+    </div>
+
+    <div id="status" class="status-text">正在載入字型檔...</div>
+
+    <div class="preview-box" id="previewBox">
+        <!-- SVG 將會渲染在此 -->
+    </div>
+
+    <div class="actions">
+        <button id="btnDownload" class="btn-download" onclick="downloadSVG()" disabled>下載 SVG 向量檔</button>
+    </div>
+</div>
+
+<script>
+    let loadedFont = null;
+    let currentSvgData = "";
+
+    // 載入預設 TTF/OTF 字型檔 (這裡選用包含較多 Unicode/特殊符號 support 的 Google Noto Sans 或 Roboto)
+    // opentype.js 需要直接解析字型檔點陣/向量路徑數據
+    const fontUrl = 'https://fonts.gstatic.com/s/notosans/v36/o-0IIpQlx3QUlC5A4PNr5TRG.ttf';
+
+    window.addEventListener('DOMContentLoaded', () => {
+        const statusEl = document.getElementById('status');
+        opentype.load(fontUrl, function(err, font) {
+            if (err) {
+                statusEl.textContent = '字型載入失敗，將使用瀏覽器預設繪製備案';
+                console.error(err);
+            } else {
+                loadedFont = font;
+                statusEl.textContent = '字型載入完成！請點擊「送出」轉換文字。';
+                generateSVG(); // 初始渲染一次
+            }
+        });
+    });
+
+    function generateSVG() {
+        const text = document.getElementById('textInput').value || ' ';
+        const previewBox = document.getElementById('previewBox');
+        const btnDownload = document.getElementById('btnDownload');
+        const fontSize = 72;
+
+        if (loadedFont) {
+            // 使用 opentype.js 將文字轉為真正的向量 <path>
+            const path = loadedFont.getPath(text, 20, 100, fontSize);
+            const bbox = path.getBoundingBox();
+            
+            const width = Math.max(Math.ceil(bbox.x2 - bbox.x1) + 40, 200);
+            const height = Math.max(Math.ceil(bbox.y2 - bbox.y1) + 60, 120);
+
+            // 修正路徑相對座標偏移
+            const pathData = loadedFont.getPath(text, 20 - bbox.x1 + 20, -bbox.y1 + 20, fontSize).toPathData(4);
+
+            const svgString = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${width} ${height}" width="${width}" height="${height}">
+  <path d="${pathData}" fill="#000000" />
+</svg>`;
+
+            currentSvgData = svgString;
+            previewBox.innerHTML = svgString;
+            btnDownload.disabled = false;
+        } else {
+            // 備用方案：若 opentype 載入失敗，輸出繪製向量 Text/Canvas SVG
+            const width = 500;
+            const height = 150;
+            const svgString = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${width} ${height}" width="${width}" height="${height}">
+  <text x="20" y="90" font-family="'Roboto', 'Droid Sans', Arial, sans-serif" font-size="${fontSize}" fill="#000000">${escapeXml(text)}</text>
+</svg>`;
+            currentSvgData = svgString;
+            previewBox.innerHTML = svgString;
+            btnDownload.disabled = false;
+        }
+    }
+
+    function escapeXml(unsafe) {
+        return unsafe.replace(/[<>&'"]/g, function (c) {
+            switch (c) {
+                case '<': return '&lt;';
+                case '>': return '&gt;';
+                case '&': return '&amp;';
+                case '\'': return '&apos;';
+                case '"': return '&quot;';
+            }
+        });
+    }
+
+    function downloadSVG() {
+        if (!currentSvgData) return;
+
+        const blob = new Blob([currentSvgData], { type: 'image/svg+xml;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = 'vector-text.svg';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+    }
+</script>
+
+</body>
+</html>
+"""
+
+with open("index.html", "w", encoding="utf-8") as f:
+    f.write(html_content)
+
+print("index.html successfully created.")
