@@ -6,252 +6,311 @@
 
 <title>文字轉 SVG 向量路徑</title>
 
-<!-- OpenType.js：負責將文字 Glyph 轉成真正的 SVG Path -->
+<!-- OpenType.js -->
 <script src="https://cdn.jsdelivr.net/npm/opentype.js@1.3.4/dist/opentype.min.js"></script>
 
 <style>
-    * {
-        box-sizing: border-box;
-    }
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    padding: 40px 20px;
+    background: #f4f5f7;
+    color: #222;
+    font-family: "Roboto", "Droid Sans", Arial, sans-serif;
+}
+
+.container {
+    width: min(100%, 1000px);
+    margin: 0 auto;
+}
+
+.header {
+    margin-bottom: 25px;
+}
+
+.header h1 {
+    margin: 0 0 8px;
+    font-size: 28px;
+    font-weight: 700;
+}
+
+.header p {
+    margin: 0;
+    color: #777;
+    font-size: 14px;
+}
+
+.card {
+    background: #fff;
+    border-radius: 16px;
+    padding: 24px;
+    margin-bottom: 20px;
+    box-shadow: 0 8px 30px rgba(0,0,0,.06);
+}
+
+label {
+    display: block;
+    margin-bottom: 8px;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+textarea {
+    width: 100%;
+    min-height: 130px;
+    resize: vertical;
+
+    padding: 16px;
+
+    border: 1px solid #ddd;
+    border-radius: 10px;
+
+    outline: none;
+
+    font-family:
+        "Roboto",
+        "Droid Sans",
+        Arial,
+        sans-serif;
+
+    font-size: 32px;
+    line-height: 1.5;
+
+    color: #000000;
+
+    transition: .2s;
+}
+
+textarea:focus {
+    border-color: #888;
+    box-shadow: 0 0 0 3px rgba(0,0,0,.05);
+}
+
+.settings {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-top: 18px;
+}
+
+.field {
+    display: flex;
+    flex-direction: column;
+}
+
+input {
+    width: 100%;
+    height: 44px;
+
+    padding: 0 12px;
+
+    border: 1px solid #ddd;
+    border-radius: 9px;
+
+    font-size: 15px;
+
+    outline: none;
+}
+
+input:focus {
+    border-color: #888;
+}
+
+.buttons {
+    display: flex;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+button {
+    border: 0;
+    border-radius: 9px;
+
+    padding: 12px 22px;
+
+    font-size: 15px;
+    font-weight: 600;
+
+    cursor: pointer;
+
+    transition: .2s;
+}
+
+.btn-primary {
+    background: #111;
+    color: #fff;
+}
+
+.btn-primary:hover {
+    background: #333;
+    transform: translateY(-1px);
+}
+
+.btn-download {
+    background: #e9ecef;
+    color: #222;
+}
+
+.btn-download:hover {
+    background: #dfe3e6;
+}
+
+button:disabled {
+    opacity: .4;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.preview-title {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    margin-bottom: 14px;
+}
+
+.preview-title h2 {
+    margin: 0;
+    font-size: 18px;
+}
+
+.status {
+    font-size: 13px;
+    color: #777;
+}
+
+.preview {
+    width: 100%;
+    min-height: 300px;
+
+    border: 1px solid #ddd;
+    border-radius: 12px;
+
+    background:
+        linear-gradient(45deg, #f0f0f0 25%, transparent 25%),
+        linear-gradient(-45deg, #f0f0f0 25%, transparent 25%),
+        linear-gradient(45deg, transparent 75%, #f0f0f0 75%),
+        linear-gradient(-45deg, transparent 75%, #f0f0f0 75%);
+
+    background-size: 20px 20px;
+
+    background-position:
+        0 0,
+        0 10px,
+        10px -10px,
+        -10px 0;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    overflow: auto;
+
+    padding: 30px;
+}
+
+.preview svg {
+    display: block;
+
+    max-width: 100%;
+    height: auto;
+
+    overflow: visible;
+}
+
+.info {
+    margin-top: 16px;
+
+    padding: 14px 16px;
+
+    border-radius: 9px;
+
+    background: #f7f7f7;
+
+    font-size: 13px;
+    line-height: 1.7;
+
+    color: #666;
+}
+
+.info strong {
+    color: #222;
+}
+
+.loading {
+    color: #888;
+    font-size: 14px;
+}
+
+@media (max-width: 650px) {
 
     body {
-        margin: 0;
-        padding: 40px 20px;
-        background: #f5f6f8;
-        color: #222;
-        font-family: "Roboto", "Droid Sans", Arial, sans-serif;
-    }
-
-    .container {
-        width: min(100%, 1000px);
-        margin: auto;
-    }
-
-    .header {
-        margin-bottom: 28px;
-    }
-
-    .header h1 {
-        margin: 0 0 8px;
-        font-size: 28px;
-        font-weight: 700;
-    }
-
-    .header p {
-        margin: 0;
-        color: #777;
-        font-size: 14px;
+        padding: 20px 12px;
     }
 
     .card {
-        background: #fff;
-        border-radius: 16px;
-        padding: 24px;
-        box-shadow: 0 8px 30px rgba(0,0,0,.06);
-        margin-bottom: 20px;
-    }
-
-    label {
-        display: block;
-        font-size: 14px;
-        font-weight: 600;
-        margin-bottom: 8px;
-    }
-
-    textarea {
-        width: 100%;
-        min-height: 130px;
-        resize: vertical;
-        border: 1px solid #ddd;
-        border-radius: 10px;
-        padding: 15px;
-        font-family: "Roboto", "Droid Sans", Arial, sans-serif;
-        font-size: 32px;
-        line-height: 1.5;
-        color: #000000;
-        outline: none;
-        transition: .2s;
-    }
-
-    textarea:focus {
-        border-color: #888;
-        box-shadow: 0 0 0 3px rgba(0,0,0,.05);
+        padding: 18px;
     }
 
     .settings {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 16px;
-        margin-top: 18px;
+        grid-template-columns: 1fr;
     }
 
-    .field {
-        display: flex;
-        flex-direction: column;
-    }
-
-    input,
-    select {
-        width: 100%;
-        height: 44px;
-        border: 1px solid #ddd;
-        border-radius: 9px;
-        padding: 0 12px;
-        font-size: 15px;
-        background: #fff;
-        outline: none;
-    }
-
-    input:focus,
-    select:focus {
-        border-color: #888;
+    textarea {
+        font-size: 24px;
     }
 
     .buttons {
-        display: flex;
-        gap: 10px;
-        margin-top: 20px;
+        flex-direction: column;
     }
 
     button {
-        border: 0;
-        border-radius: 9px;
-        padding: 12px 22px;
-        font-size: 15px;
-        font-weight: 600;
-        cursor: pointer;
-        transition: .2s;
-    }
-
-    .btn-primary {
-        background: #111;
-        color: white;
-    }
-
-    .btn-primary:hover {
-        background: #333;
-        transform: translateY(-1px);
-    }
-
-    .btn-download {
-        background: #e9ecef;
-        color: #222;
-    }
-
-    .btn-download:hover {
-        background: #dfe3e6;
-    }
-
-    button:disabled {
-        opacity: .4;
-        cursor: not-allowed;
-        transform: none;
-    }
-
-    .preview-title {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 14px;
-    }
-
-    .preview-title h2 {
-        margin: 0;
-        font-size: 18px;
-    }
-
-    .status {
-        font-size: 13px;
-        color: #777;
-    }
-
-    .preview {
         width: 100%;
-        min-height: 280px;
-        border: 1px solid #ddd;
-        border-radius: 12px;
-        background:
-            linear-gradient(45deg, #f0f0f0 25%, transparent 25%),
-            linear-gradient(-45deg, #f0f0f0 25%, transparent 25%),
-            linear-gradient(45deg, transparent 75%, #f0f0f0 75%),
-            linear-gradient(-45deg, transparent 75%, #f0f0f0 75%);
-        background-size: 20px 20px;
-        background-position: 0 0, 0 10px, 10px -10px, -10px 0;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        overflow: auto;
-        padding: 30px;
     }
-
-    .preview svg {
-        max-width: 100%;
-        height: auto;
-        display: block;
-    }
-
-    .info {
-        margin-top: 16px;
-        padding: 14px 16px;
-        border-radius: 9px;
-        background: #f7f7f7;
-        font-size: 13px;
-        line-height: 1.7;
-        color: #666;
-    }
-
-    .info strong {
-        color: #222;
-    }
-
-    @media (max-width: 650px) {
-
-        body {
-            padding: 20px 12px;
-        }
-
-        .card {
-            padding: 18px;
-        }
-
-        .settings {
-            grid-template-columns: 1fr;
-        }
-
-        textarea {
-            font-size: 24px;
-        }
-
-        .buttons {
-            flex-direction: column;
-        }
-
-        button {
-            width: 100%;
-        }
-    }
+}
 </style>
 </head>
+
 
 <body>
 
 <div class="container">
 
     <div class="header">
+
         <h1>文字 → SVG 向量路徑</h1>
-        <p>輸入文字後轉換成 Illustrator 可編輯的向量外框</p>
+
+        <p>
+            將文字轉換成 Illustrator 可編輯的真正向量 Path
+        </p>
+
     </div>
+
+
+    <!-- =========================
+         輸入區
+    ========================== -->
 
     <div class="card">
 
-        <label for="textInput">輸入文字</label>
+        <label for="textInput">
+            輸入文字
+        </label>
 
         <textarea id="textInput">Eggꒉ:)و ̑̑</textarea>
+
 
         <div class="settings">
 
             <div class="field">
-                <label for="fontSize">字體大小</label>
+
+                <label for="fontSize">
+                    字體大小
+                </label>
+
                 <input
                     id="fontSize"
                     type="number"
@@ -259,29 +318,40 @@
                     min="10"
                     max="1000"
                 >
+
             </div>
 
+
             <div class="field">
-                <label for="fontSelect">字型</label>
-                <select id="fontSelect">
-                    <option value="roboto">Roboto</option>
-                </select>
+
+                <label>
+                    字體
+                </label>
+
+                <input
+                    type="text"
+                    value="Roboto"
+                    readonly
+                >
+
             </div>
 
         </div>
 
+
         <div class="buttons">
 
             <button
-                class="btn-primary"
                 id="generateBtn"
+                class="btn-primary"
             >
                 送出
             </button>
 
+
             <button
-                class="btn-download"
                 id="downloadBtn"
+                class="btn-download"
                 disabled
             >
                 下載 SVG 向量檔
@@ -292,32 +362,57 @@
     </div>
 
 
+    <!-- =========================
+         預覽區
+    ========================== -->
+
     <div class="card">
 
         <div class="preview-title">
-            <h2>向量預覽</h2>
+
+            <h2>
+                向量預覽
+            </h2>
+
             <span
-                class="status"
                 id="status"
+                class="status"
             >
-                尚未轉換
+                字型載入中…
             </span>
+
         </div>
+
 
         <div
-            class="preview"
             id="preview"
+            class="preview"
         >
-            <span style="color:#999;">
-                請輸入文字後按「送出」
+
+            <span class="loading">
+                正在載入字型…
             </span>
+
         </div>
 
+
         <div class="info">
-            <strong>SVG 說明：</strong><br>
-            下載的 SVG 不是一般的 SVG 文字，而是由
-            <strong>Path 路徑</strong>組成。
-            Illustrator 開啟後可直接編輯向量節點，不需要再執行「文字 → 建立外框」。
+
+            <strong>
+                向量模式
+            </strong>
+
+            <br>
+
+            下載的 SVG 會使用
+            <strong>&lt;path&gt;</strong>
+            路徑。
+
+            <br>
+
+            SVG 中不會保留 HTML / SVG 文字，
+            Illustrator 開啟後可直接進行節點編輯。
+
         </div>
 
     </div>
@@ -327,229 +422,557 @@
 
 <script>
 
-/* =========================================================
-   Roboto 字型
-   ========================================================= */
-
-const FONT_URL =
-    "https://cdn.jsdelivr.net/npm/@fontsource/roboto@5.1.0/files/roboto-latin-400-normal.ttf";
+/* ==========================================================
+   字型設定
+========================================================== */
 
 
-let font = null;
+/*
+    Roboto
+    使用 Google Fonts 官方 GitHub 字型檔
+*/
+const ROBOTO_URL =
+    "https://raw.githubusercontent.com/googlefonts/roboto/main/src/hinted/Roboto-Regular.ttf";
+
+
+/*
+    Noto Sans
+
+    用來處理 Roboto 沒有的特殊 Unicode 字元。
+*/
+const NOTO_URL =
+    "https://raw.githubusercontent.com/notofonts/noto-fonts/main/hinted/ttf/NotoSans/NotoSans-Regular.ttf";
+
+
+let robotoFont = null;
+let notoFont = null;
+
 let currentSVG = "";
-let currentText = "";
 
 
-/* =========================================================
+/* ==========================================================
+   DOM
+========================================================== */
+
+const textInput =
+    document.getElementById("textInput");
+
+const fontSizeInput =
+    document.getElementById("fontSize");
+
+const generateBtn =
+    document.getElementById("generateBtn");
+
+const downloadBtn =
+    document.getElementById("downloadBtn");
+
+const preview =
+    document.getElementById("preview");
+
+const status =
+    document.getElementById("status");
+
+
+/* ==========================================================
    載入字型
-   ========================================================= */
+========================================================== */
 
-async function loadFont() {
+async function loadFonts() {
 
-    const status = document.getElementById("status");
-
-    status.textContent = "正在載入字型…";
+    status.textContent =
+        "正在載入字型…";
 
     try {
 
-        font = await opentype.load(FONT_URL);
+        /*
+            同時載入兩個字型
+        */
 
-        status.textContent = "字型已載入";
+        const results =
+            await Promise.all([
 
-        console.log("Roboto loaded");
+                opentype.load(ROBOTO_URL),
+
+                opentype.load(NOTO_URL)
+
+            ]);
+
+
+        robotoFont = results[0];
+
+        notoFont = results[1];
+
+
+        status.textContent =
+            "字型已載入";
+
+
+        generateBtn.disabled = false;
+
 
     } catch (error) {
 
-        console.error(error);
+        console.error(
+            "Font loading error:",
+            error
+        );
+
 
         status.textContent =
-            "字型載入失敗，請確認網路連線";
+            "字型載入失敗";
+
+
+        preview.innerHTML = `
+            <div style="
+                color:#c00;
+                text-align:center;
+                line-height:1.8;
+            ">
+                字型載入失敗。<br>
+                請確認 GitHub Pages 可以連線到字型來源。
+            </div>
+        `;
 
     }
 
 }
 
 
-/* =========================================================
-   Escape XML
-   ========================================================= */
+/* ==========================================================
+   判斷字型是否具有 Glyph
+========================================================== */
 
-function escapeXML(text) {
-
-    return text
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;")
-        .replace(/'/g, "&apos;");
-
-}
-
-
-/* =========================================================
-   文字轉 Path
-   ========================================================= */
-
-function createSVG(text, fontSize) {
+function hasGlyph(font, character) {
 
     if (!font) {
-        throw new Error("Font not loaded");
+        return false;
     }
 
-    /*
-        使用 OpenType.js：
+    try {
 
-        font.getPath()
-        
-        取得真正的 Glyph Path。
+        const glyph =
+            font.charToGlyph(character);
+
+        /*
+            glyph 0 通常代表 .notdef
+        */
+
+        return (
+            glyph &&
+            glyph.index !== 0
+        );
+
+    } catch (error) {
+
+        return false;
+
+    }
+
+}
+
+
+/* ==========================================================
+   取得適合的字型
+========================================================== */
+
+function getFontForCharacter(character) {
+
+    /*
+        優先使用 Roboto
     */
 
-    const lines = text.split("\n");
+    if (
+        hasGlyph(
+            robotoFont,
+            character
+        )
+    ) {
 
-    const lineHeight = fontSize * 1.25;
+        return robotoFont;
 
-    let paths = [];
+    }
+
+
+    /*
+        Roboto 沒有時，
+        使用 Noto Sans
+    */
+
+    if (
+        hasGlyph(
+            notoFont,
+            character
+        )
+    ) {
+
+        return notoFont;
+
+    }
+
+
+    return null;
+
+}
+
+
+/* ==========================================================
+   將單一字元轉 Path
+========================================================== */
+
+function characterToPath(
+    character,
+    x,
+    y,
+    fontSize
+) {
+
+    const font =
+        getFontForCharacter(character);
+
+
+    if (!font) {
+
+        console.warn(
+            "找不到 Glyph：",
+            character,
+            character.codePointAt(0).toString(16)
+        );
+
+        return {
+            path: "",
+            advance: fontSize * 0.5
+        };
+
+    }
+
+
+    try {
+
+        /*
+            使用 OpenType.js 產生 Glyph Path
+        */
+
+        const path =
+            font.getPath(
+                character,
+                x,
+                y,
+                fontSize
+            );
+
+
+        /*
+            取得字距
+        */
+
+        const glyph =
+            font.charToGlyph(character);
+
+
+        const advance =
+            glyph.advanceWidth
+            *
+            (
+                fontSize /
+                font.unitsPerEm
+            );
+
+
+        return {
+
+            path:
+                path.toPathData(3),
+
+            advance:
+                advance
+
+        };
+
+    } catch (error) {
+
+        console.warn(
+            "Glyph conversion error:",
+            character,
+            error
+        );
+
+        return {
+
+            path: "",
+
+            advance:
+                fontSize * 0.5
+
+        };
+
+    }
+
+}
+
+
+/* ==========================================================
+   產生 SVG
+========================================================== */
+
+function createSVG(
+    text,
+    fontSize
+) {
+
+    /*
+        將文字分成換行
+    */
+
+    const lines =
+        text.split(/\r?\n/);
+
+
+    /*
+        字體上下高度
+    */
+
+    const lineHeight =
+        fontSize * 1.25;
+
+
+    /*
+        SVG 留白
+    */
+
+    const padding =
+        fontSize * 0.3;
+
+
+    /*
+        計算每行寬度
+    */
+
+    let lineWidths = [];
 
     let maxWidth = 0;
 
-    let currentY = fontSize;
+
+    lines.forEach(
+        line => {
+
+            let width = 0;
 
 
-    lines.forEach((line) => {
+            /*
+                使用 Array.from
+                正確處理 Unicode
+            */
 
-        const path = font.getPath(
-            line,
-            0,
-            currentY,
-            fontSize
-        );
+            const chars =
+                Array.from(line);
 
-        const box = path.getBoundingBox();
 
-        const width =
-            box.x2 - box.x1;
+            chars.forEach(
+                character => {
 
-        if (width > maxWidth) {
-            maxWidth = width;
+                    const result =
+                        characterToPath(
+                            character,
+                            0,
+                            0,
+                            fontSize
+                        );
+
+
+                    width +=
+                        result.advance;
+
+                }
+            );
+
+
+            lineWidths.push(width);
+
+
+            if (
+                width > maxWidth
+            ) {
+
+                maxWidth = width;
+
+            }
+
         }
-
-        /*
-            轉成 SVG path data
-        */
-
-        const pathData = path.toPathData(3);
-
-        if (pathData) {
-
-            paths.push({
-                data: pathData
-            });
-
-        }
-
-        currentY += lineHeight;
-
-    });
-
-
-    const totalHeight =
-        lines.length * lineHeight;
+    );
 
 
     /*
-        加一點安全邊界
+        如果沒有文字
     */
 
-    const padding = fontSize * 0.15;
+    if (
+        maxWidth <= 0
+    ) {
+
+        maxWidth =
+            fontSize;
+
+    }
+
 
     const width =
-        Math.max(maxWidth + padding * 2, 1);
+        maxWidth +
+        padding * 2;
+
 
     const height =
-        Math.max(totalHeight + padding * 2, 1);
+        lines.length *
+        lineHeight +
+        padding * 2;
 
 
     /*
-        因為 OpenType 的 Y 軸方向與 SVG 不同，
-        所以使用 group transform 修正座標。
+        Path 容器
     */
 
     let pathHTML = "";
 
-    paths.forEach(item => {
 
-        pathHTML += `
-        <path
-            d="${item.data}"
-            fill="#000000"
-        />
-        `;
+    /*
+        OpenType 的 Y 座標
+        與 SVG 相同方向，
+        直接建立每一行 Path
+    */
 
-    });
+    lines.forEach(
+        (line, lineIndex) => {
+
+            let x =
+                padding;
 
 
-    const svg = `
+            /*
+                baseline
+            */
+
+            let y =
+                padding +
+                fontSize +
+                lineIndex *
+                lineHeight;
+
+
+            const chars =
+                Array.from(line);
+
+
+            chars.forEach(
+                character => {
+
+                    const result =
+                        characterToPath(
+                            character,
+                            x,
+                            y,
+                            fontSize
+                        );
+
+
+                    if (
+                        result.path
+                    ) {
+
+                        pathHTML +=
+                            `
+                            <path
+                                d="${result.path}"
+                                fill="#000000"
+                            />
+                            `;
+
+                    }
+
+
+                    x +=
+                        result.advance;
+
+                }
+            );
+
+        }
+    );
+
+
+    /*
+        建立真正的 SVG
+    */
+
+    const svg =
+
+`<?xml version="1.0" encoding="UTF-8"?>
 <svg
     xmlns="http://www.w3.org/2000/svg"
-    width="${width}"
-    height="${height}"
-    viewBox="0 0 ${width} ${height}"
+    width="${width.toFixed(2)}"
+    height="${height.toFixed(2)}"
+    viewBox="0 0 ${width.toFixed(2)} ${height.toFixed(2)}"
 >
-    <g
-        fill="#000000"
-        transform="translate(${padding}, ${padding})"
-    >
+    <g fill="#000000">
         ${pathHTML}
     </g>
-</svg>
-`;
+</svg>`;
+
 
     return svg;
 
 }
 
 
-/* =========================================================
-   產生 SVG
-   ========================================================= */
+/* ==========================================================
+   送出
+========================================================== */
 
-async function generate() {
-
-    const textInput =
-        document.getElementById("textInput");
-
-    const fontSizeInput =
-        document.getElementById("fontSize");
-
-    const preview =
-        document.getElementById("preview");
-
-    const status =
-        document.getElementById("status");
-
-    const downloadBtn =
-        document.getElementById("downloadBtn");
-
+function generate() {
 
     const text =
         textInput.value;
 
+
     const fontSize =
-        parseFloat(fontSizeInput.value);
+        parseFloat(
+            fontSizeInput.value
+        );
 
 
     if (!text) {
 
-        alert("請先輸入文字");
+        alert(
+            "請先輸入文字"
+        );
 
         return;
 
     }
 
 
-    if (!font) {
+    if (
+        !fontSize ||
+        fontSize <= 0
+    ) {
 
-        await loadFont();
+        alert(
+            "請輸入正確的字體大小"
+        );
+
+        return;
+
+    }
+
+
+    if (
+        !robotoFont ||
+        !notoFont
+    ) {
+
+        alert(
+            "字型尚未載入完成，請稍候再試。"
+        );
+
+        return;
 
     }
 
@@ -557,140 +980,194 @@ async function generate() {
     try {
 
         status.textContent =
-            "正在轉換成向量…";
+            "正在轉換向量…";
 
 
-        const svg =
+        /*
+            建立 SVG Path
+        */
+
+        currentSVG =
             createSVG(
                 text,
                 fontSize
             );
 
 
-        currentSVG = svg;
-        currentText = text;
+        /*
+            顯示預覽
+
+            注意：
+            這裡顯示的也是 SVG Path，
+            不是文字。
+        */
+
+        preview.innerHTML =
+            currentSVG;
 
 
-        preview.innerHTML = svg;
-
-
-        downloadBtn.disabled = false;
+        downloadBtn.disabled =
+            false;
 
 
         status.textContent =
-            "完成：已轉換為 Path 向量";
+            "完成：SVG Path";
 
     } catch (error) {
 
         console.error(error);
 
+
         status.textContent =
             "轉換失敗";
 
-        alert(
-            "文字轉向量失敗。\n\n" +
-            error.message
-        );
+
+        preview.innerHTML = `
+            <div style="
+                color:#c00;
+                text-align:center;
+                line-height:1.8;
+            ">
+                文字轉向量失敗。<br>
+                ${error.message}
+            </div>
+        `;
 
     }
 
 }
 
 
-/* =========================================================
+/* ==========================================================
    下載 SVG
-   ========================================================= */
+========================================================== */
 
 function downloadSVG() {
 
     if (!currentSVG) {
 
-        alert("請先按「送出」");
+        alert(
+            "請先按「送出」"
+        );
 
         return;
 
     }
 
 
+    /*
+        Blob
+    */
+
     const blob =
         new Blob(
-            [currentSVG],
+            [
+                currentSVG
+            ],
             {
-                type: "image/svg+xml;charset=utf-8"
+                type:
+                    "image/svg+xml;charset=utf-8"
             }
         );
 
 
     const url =
-        URL.createObjectURL(blob);
+        URL.createObjectURL(
+            blob
+        );
 
 
-    const a =
+    const link =
         document.createElement("a");
 
 
-    a.href = url;
+    link.href =
+        url;
 
-    a.download =
+
+    link.download =
         "text-outline.svg";
 
 
-    document.body.appendChild(a);
-
-    a.click();
-
-    document.body.removeChild(a);
+    document.body.appendChild(
+        link
+    );
 
 
-    URL.revokeObjectURL(url);
+    link.click();
+
+
+    document.body.removeChild(
+        link
+    );
+
+
+    /*
+        釋放記憶體
+    */
+
+    setTimeout(
+        () => {
+
+            URL.revokeObjectURL(
+                url
+            );
+
+        },
+        1000
+    );
+
+
+    status.textContent =
+        "SVG 已下載";
 
 }
 
 
-/* =========================================================
-   Events
-   ========================================================= */
+/* ==========================================================
+   按鈕
+========================================================== */
 
-document
-    .getElementById("generateBtn")
-    .addEventListener(
-        "click",
-        generate
-    );
+generateBtn.addEventListener(
+    "click",
+    generate
+);
 
 
-document
-    .getElementById("downloadBtn")
-    .addEventListener(
-        "click",
-        downloadSVG
-    );
+downloadBtn.addEventListener(
+    "click",
+    downloadSVG
+);
 
 
-/* Enter 快速產生 */
+/* ==========================================================
+   Ctrl + Enter
+========================================================== */
 
-document
-    .getElementById("textInput")
-    .addEventListener(
-        "keydown",
-        function(e) {
+textInput.addEventListener(
+    "keydown",
+    event => {
 
-            if (
-                e.ctrlKey &&
-                e.key === "Enter"
-            ) {
+        if (
+            event.ctrlKey &&
+            event.key === "Enter"
+        ) {
 
-                generate();
-
-            }
+            generate();
 
         }
-    );
+
+    }
+);
 
 
-/* 啟動時載入字型 */
+/* ==========================================================
+   啟動
+========================================================== */
 
-loadFont();
+generateBtn.disabled = true;
+
+loadFonts();
 
 </script>
 
