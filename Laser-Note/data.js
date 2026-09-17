@@ -69,7 +69,7 @@ const products = [
     "model": "B-140 馬口鐵盒",
     "material": "馬口鐵",
     "productType": "盒子",
-    "position": "置中 / 注意蓋子有無彈起，壓一下調整密合度，確保平整。",
+    "position": "置中 / 注意蓋子有無彈起，壓一下調整密合度，確保平整。<br>⚠注意：如果鐵盒（邊緣）有明顯氧化就不要刻，去換一個。",
     "image": "https://cdn-general.cybassets.com/media/W1siZiIsIjM1OTMyL3Byb2R1Y3RzLzY3ODU5NTg3LzE3NzkxNzA3MzJfMzZhMTA5NmExNjkzOGYzMGMxMWIuanBlZyJdLFsicCIsInRodW1iIiwiNjAweDYwMCJdXQ.jpeg?sha=91c0a56ad028f67e",
     "url": "https://www.hepi.com.tw/products/4710677049269",
     "presetId": ["stainless_steel"],
